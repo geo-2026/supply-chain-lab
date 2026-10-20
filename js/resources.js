@@ -95,5 +95,16 @@ window.RES = (function () {
     v.hidden = false; v.querySelector('.body').scrollTop = 0;
   }
 
-  return { mount, openViewer };
+  // 새 탭으로 자료 열기 — 이미지는 view.html, 자료 화면은 앱의 자료 탭
+  function openTab(src, title, pdf) {
+    const u = new URL('view.html', location.href);
+    u.searchParams.set('src', src); u.searchParams.set('title', title); if (pdf) u.searchParams.set('pdf', pdf);
+    const w = window.open(u.href, '_blank', 'noopener');
+    if (w === undefined) STORE.toast('새 탭을 열지 못했습니다. 팝업 차단을 확인하세요.');
+  }
+  function openResTab(sub) {
+    window.open(new URL('index.html#res/' + (sub || 'ads'), location.href).href, '_blank', 'noopener');
+  }
+
+  return { mount, openViewer, openTab, openResTab };
 })();

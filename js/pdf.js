@@ -35,7 +35,7 @@ window.PDF = (function () {
       <tr><td class="lab">1차시</td><td>1) 수행평가 과정 설명, 앱 접속 확인 2) [개별활동Ⅰ] 제품 선택하기 3) [개별활동Ⅱ] 제품 원료 예상하기, 부가가치 개념 알아보기</td><td>평가안내문 · 자료(광고지·부가가치 개념) · 활동지 앱</td></tr>
       <tr><td class="lab">2차시</td><td>4) [개별활동Ⅲ] 제품 라벨 확인하기 5) [개별활동Ⅳ] 상품 사슬표 작성하기</td><td>자료(라벨·원료 가격·부가가치 자료)</td></tr>
       <tr><td class="lab">3차시</td><td>6) [개별활동Ⅴ] 상품 사슬 지도 작성하기</td><td>자료 앱(상품 사슬 지도)</td></tr>
-      <tr><td class="lab">4차시</td><td>7) [개별활동Ⅵ] 가장 중요한 단계 찾기 8) [개별활동Ⅶ] 상품 사슬의 문제점 9) [개별활동Ⅷ] 책임 있는 소비 방법 10) 발표, 활동지·지도 PDF 제출, 평가지 작성</td><td>평가지</td></tr></tbody></table></div>`);
+      <tr><td class="lab">4차시</td><td>7) [개별활동Ⅵ] 가장 중요한 단계 찾기 8) [개별활동Ⅶ] 내가 생각하는 상품 사슬 9) [개별활동Ⅷ] 책임 있는 소비 방법 10) 발표, 활동지·지도 PDF 제출, 평가지 작성</td><td>평가지</td></tr></tbody></table></div>`);
     // 1
     add(`<h2>1. [개별활동Ⅰ] 제품 선택하기 (광고지)</h2><div class="q">1-1. 가상 상품 광고지 6종을 살펴보고, 내가 탐구할 제품 하나에 ✓ 표시해 봅시다.</div>
       <table><thead><tr><th style="width:44px">번호</th><th>제품</th><th>광고 대표 문구</th><th style="width:120px">판매 가격</th><th style="width:60px">선택(✓)</th></tr></thead><tbody>
@@ -61,7 +61,8 @@ window.PDF = (function () {
       <table><thead><tr><th style="width:50px">단계</th><th>누가 무엇을</th><th style="width:70px">산 값</th><th style="width:70px">판 값</th><th style="width:90px">부가가치</th></tr></thead><tbody>
       ${DATA.BREAD.rows.map((r, i) => `<tr><td class="lab">${r[0]}</td><td>${esc(r[1])}</td><td class="num">${won(r[2])}원</td><td class="num">${won(r[3])}원</td><td class="num">( ${esc(c.bread[i])} )원</td></tr>`).join('')}
       <tr><td colspan="4" class="lab">네 단계 부가가치의 합</td><td class="num">( ${esc(c.sum)} )원</td></tr></tbody></table>
-      <p style="margin:6px 0 0">→ 네 단계 부가가치의 합은 ( ${esc(c.s1)} )과 같다.<br>&nbsp;&nbsp;&nbsp;소비자 가격 1,100원 중 100원은 ( ${esc(c.s2)} )이다.</p>`);
+      <p style="margin:6px 0 0">→ 네 단계 부가가치의 합은 ( <b>A</b> )과 같다.<br>&nbsp;&nbsp;&nbsp;소비자 가격 1,100원 중 100원은 ( <b>B</b> )이다.</p>
+      <table style="margin-top:6px"><tbody><tr><td class="lab" style="width:160px">A에 들어갈 가격은?</td><td>( ${esc(c.s1)} )원</td><td class="lab" style="width:160px">B에 들어갈 용어는?</td><td>( ${esc(c.s2)} )</td></tr></tbody></table>`);
     // 3
     add(`<h2>3. [개별활동Ⅲ] 제품 라벨 확인하기</h2><div class="q">3-1. 제품 라벨에서 다음 정보를 찾아 적어봅시다.</div><table><tbody>
       <tr><td class="lab" style="width:170px">제조국 (원산지)</td><td>${val(S.a3.origin)}</td></tr><tr><td class="lab">제조자 (공장 위치)</td><td>${val(S.a3.maker)}</td></tr>
@@ -85,30 +86,26 @@ window.PDF = (function () {
       <tr><td colspan="3" class="lab">합계</td><td class="num">${won(vaSum)}</td><td class="num">100%</td><td>소비자 가격 ( ${prod ? won(price) : ''} )원</td></tr></tbody></table>`, true);
     add(`<div class="q">4-3. 상품 사슬표를 보고 알게 된 점을 적어봅시다.</div>${box(S.a4.insight, 'tall')}`);
     // 5
-    const places = MAP.getPlaces(), legs = MAP.getLegsForWorksheet(), mapImg = STORE.get('map:image');
-    const done = { hq: places.some(p => p.role === 'hq'), raw: places.some(p => p.role === 'raw'), factory: places.some(p => p.role === 'factory'), sale: places.some(p => p.role === 'sale'), route: legs.length > 0 };
-    add(`<h2>5. [개별활동Ⅴ] 상품 사슬 지도 작성하기 (자료 앱의 상품 사슬 지도)</h2>
-      <div class="q">5-1. 지도에 꼭 표시해야 할 내용입니다. 표시 방법을 정하고, 지도를 완성해 봅시다</div>
-      <table><thead><tr><th style="width:170px">표시할 내용</th><th>표시 방법</th><th style="width:60px">완성</th></tr></thead><tbody>
-      ${[['hq', '브랜드 본사 위치'], ['raw', '주요 원료 생산지'], ['factory', '원산지 또는 제조국'], ['sale', '판매 · 소비 지역'], ['route', '운송 경로 (화살표)']].map(([k, nm]) => `<tr><td class="lab">${nm}</td><td>${val(S.a5.marks[k])}</td><td style="text-align:center">${done[k] ? '✓' : ''}</td></tr>`).join('')}</tbody></table>`, true);
+    const legs = MAP.getLegsForWorksheet(), mapImg = STORE.get('map:image');
+    add(`<h2>5. [개별활동Ⅴ] 상품 사슬 지도 작성하기 (자료 앱의 상품 사슬 지도)</h2>`, true);
     const mimg = S.a5.manual ? S.a5.manualImage : mapImg;
     if (mimg) add(`<img class="map" src="${mimg}" alt="상품 사슬 지도">`);
     else add(`<div class="box tall" style="text-align:center;color:#888;padding-top:40px">(지도 이미지 없음 — 지도 앱에서 지도를 만들어 주세요)</div>`);
     if (S.a5.manual) {
       const ml = S.a5.manualLegs.filter(r => r.from || r.to || r.km);
-      add(`<div class="q">5-2 앱에서 완성한 지도의 이동 거리를 정리하고, 지도 PDF를 함께 제출합니다.</div>
+      add(`<div class="q">5-1. 앱에서 완성한 지도의 이동 거리를 정리하고, 지도 PDF를 함께 제출합니다.</div>
         <table><thead><tr><th>구간 (출발 → 도착)</th><th style="width:140px">이동 방법</th><th style="width:110px">이동 거리 (km)</th></tr></thead><tbody>
         ${(ml.length ? ml : S.a5.manualLegs).map(r => `<tr><td>${esc(r.from)} → ${esc(r.to)}</td><td style="text-align:center">${esc(r.mode || '도로 / 선박')}</td><td class="num">${r.km === '' ? '' : won(r.km)}</td></tr>`).join('')}
         <tr><td colspan="2" class="lab">전체 이동 거리</td><td class="num">${won(S.a5.manualLegs.reduce((a, r) => a + n(r.km), 0))} km</td></tr></tbody></table><p class="hint">(직접 입력)</p>`);
     } else {
       const tot = legs.reduce((a, l) => ({ land: a.land + (l.land || 0), sea: a.sea + (l.sea || 0) }), { land: 0, sea: 0 });
-      add(`<div class="q">5-2 앱에서 완성한 지도의 이동 거리를 정리하고, 지도 PDF를 함께 제출합니다.</div>
+      add(`<div class="q">5-1. 앱에서 완성한 지도의 이동 거리를 정리하고, 지도 PDF를 함께 제출합니다.</div>
         <table><thead><tr><th>구간 (출발 → 도착)</th><th style="width:110px">이동 방법</th><th style="width:72px">육상 (km)</th><th style="width:72px">해상 (km)</th><th style="width:90px">이동 거리 (km)</th></tr></thead><tbody>
         ${legs.length ? legs.map(l => `<tr><td>${esc(l.fromName)} → ${esc(l.toName)}${l.via && l.via.length ? `<div style="font-size:10px;color:#555">경유 항구 : ${esc(l.via.join(', '))}</div>` : ''}</td><td style="text-align:center">${esc(l.modeLabel)}</td><td class="num">${won(l.land)}</td><td class="num">${won(l.sea)}</td><td class="num">${won(l.total)}</td></tr>`).join('') : [1, 2, 3, 4, 5].map(() => '<tr><td>&nbsp;</td><td style="text-align:center">도로 / 선박</td><td></td><td></td><td></td></tr>').join('')}
         <tr><td colspan="2" class="lab">전체 이동 거리</td><td class="num">${won(tot.land)}</td><td class="num">${won(tot.sea)}</td><td class="num">${won(tot.land + tot.sea)} km</td></tr></tbody></table>
         <p class="hint">도로 = 직선거리 × 1.3(평균 우회율), 선박 = 주요 항로(운하·해협 경유) 기준 평균 추정값. 육상·해상 거리를 구분해 표시함.</p>`);
     }
-    add(`<div class="q">5-3. 지도를 완성하고 알게 된 점을 적어봅시다. (가장 먼 구간, 바닷길이 지나는 곳 등)</div>${box(S.a5.insight)}`);
+    add(`<div class="q">5-2. 지도를 완성하고 알게 된 점을 적어봅시다. (가장 먼 구간, 바닷길이 지나는 곳 등)</div>${box(S.a5.insight)}`);
     // 6
     const a6 = S.a6;
     add(`<h2>6. [개별활동Ⅵ] 상품 사슬에서 가장 중요한 단계 찾기</h2><div class="q">6-1. 부가가치가 가장 높게 만들어지는 단계와 장소를 찾아봅시다.</div>
@@ -121,24 +118,17 @@ window.PDF = (function () {
       <table style="width:70%"><tbody><tr><td class="lab" style="width:140px">원료 생산지의 몫</td><td>( ${a6.rawShareWon === '' ? '' : won(a6.rawShareWon)} )원 · ( ${a6.rawShareWon === '' ? '' : pct(n(a6.rawShareWon), price)} )%</td></tr>
       <tr><td class="lab">가장 큰 몫</td><td>( ${a6.topShareWon === '' ? '' : won(a6.topShareWon)} )원 · ( ${a6.topShareWon === '' ? '' : pct(n(a6.topShareWon), price)} )%</td></tr></tbody></table>`);
     // 7
-    add(`<h2>7. [개별활동Ⅶ] 내가 생각하는 상품 사슬의 문제점</h2><div class="q">7-1. 여러 관점에서 상품 사슬의 문제점을 찾아봅시다.</div>
-      <table><thead><tr><th style="width:110px">관점</th><th>문제점</th><th style="width:200px">근거 (자료 · 수치)</th></tr></thead><tbody>
-      ${Object.entries(WS.VIEWS).map(([k, nm]) => `<tr><td class="lab">${nm.replace(' (', '<br>(')}</td><td style="min-height:50px">${val(S.a7.rows[k].problem)}</td><td>${val(S.a7.rows[k].evidence)}</td></tr>`).join('')}</tbody></table>`, true);
-    add(`<div class="q">7-2. 위의 문제점 중 가장 심각하다고 생각하는 것 하나를 고르고, 그 이유를 적어봅시다.</div>
-      <div class="box tall"><b>${esc(WS.VIEWS[S.a7.worst] || '')}</b>${S.a7.worst ? '\n' : ''}${esc(S.a7.worstReason)}</div>`);
+    add(`<h2>7. [개별활동Ⅶ] 내가 생각하는 상품 사슬</h2><div class="q">7-1. 상품 사슬의 장점</div>${box(S.a7.pros, 'tall')}`, true);
+    add(`<div class="q">7-2. 상품 사슬의 문제점 또는 단점</div>${box(S.a7.cons, 'tall')}`);
+    add(`<div class="q">7-3. 문제점 해결 방안</div>${box(S.a7.solution, 'tall')}`);
     // 8
-    add(`<h2>8. [개별활동Ⅷ] 책임 있는 소비 방법</h2><div class="q">8-1. 7번에서 찾은 문제를 줄이기 위한 책임 있는 소비 방법을 정리해 봅시다.</div><div class="hint">(참고 : 공정무역 인증 확인, 원산지·성분 표시 읽기, 오래 쓰기·고쳐 쓰기, 중고 거래, 분리배출, 꼭 필요한 만큼 사기 등)</div>
-      <table><thead><tr><th>책임 있는 소비 방법</th><th>해결하려는 문제 (7번과 연결)</th><th>실천 계획 (언제 · 어디서 · 얼마나)</th></tr></thead><tbody>
-      ${S.a8.rows.map(r => `<tr><td style="min-height:50px">${val(r.method)}</td><td>${r.problemKey ? `<b>[${esc(WS.VIEWS[r.problemKey])}]</b> ` : ''}${esc(r.problemText)}</td><td>${val(r.plan)}</td></tr>`).join('')}</tbody></table>`, true);
+    add(`<h2>8. [개별활동Ⅷ] 책임 있는 소비 방법</h2><div class="q">8-1. 책임있는 소비 방법 알아보기</div><div class="hint">(참고 : 공정무역 인증 확인, 원산지·성분 표시 읽기, 오래 쓰기·고쳐 쓰기, 중고 거래, 분리배출, 꼭 필요한 만큼 사기 등)</div>${box(S.a8.method, 'tall')}`, true);
     add(`<div class="q">8-2. 소비자 한 사람의 실천만으로 부족한 점은 무엇일까요? 기업과 정부·국제사회가 할 일도 적어봅시다.</div>
       <table><tbody><tr><td class="lab" style="width:120px">기업</td><td style="min-height:46px">${val(S.a8.company)}</td></tr><tr><td class="lab">정부 · 국제사회</td><td>${val(S.a8.gov)}</td></tr></tbody></table>`);
     add(`<div class="q">8-3. 이번 프로젝트를 마치며 ‘나의 소비 다짐’을 한 문장으로 적어봅시다.</div>${box(S.a8.pledge)}`);
     // 평가지
     add(`<h1 style="letter-spacing:8px">평 가 지</h1><p style="text-align:center;font-size:14px">평가자 : 세계시민과 지리 ( ${esc(s.classNo)} )반 ( ${esc(s.number)} )번 이름 ( ${esc(s.name)} )</p>
       <div class="q">1. 자기 성찰</div><table><thead><tr><th>광고만 보았을 때와 상품 사슬을 따라간 뒤, 이 제품을 보는 나의 생각은 어떻게 달라졌나요?</th></tr></thead><tbody><tr><td style="min-height:110px;white-space:pre-wrap">${esc(S.eval.reflection)}&nbsp;</td></tr></tbody></table>`, true);
-    add(`<div class="q">2. 상품 사슬 지도 발표 평가 (친구의 발표를 듣고 평가, 각 항목 3점 만점)</div>
-      <table><thead><tr><th style="width:90px">친구 이름</th><th style="width:66px">상품<br>사슬표의<br>정확성</th><th style="width:66px">지도 필수<br>요소<br>표시</th><th style="width:66px">문제점<br>인식의<br>타당성</th><th style="width:66px">소비<br>실천의<br>구체성</th><th style="width:50px">합계</th><th>한 줄 평</th></tr></thead><tbody>
-      ${S.eval.rows.map(r => { const t = n(r.s1) + n(r.s2) + n(r.s3) + n(r.s4); return `<tr style="height:40px"><td>${esc(r.name)}</td><td style="text-align:center">${esc(r.s1)}</td><td style="text-align:center">${esc(r.s2)}</td><td style="text-align:center">${esc(r.s3)}</td><td style="text-align:center">${esc(r.s4)}</td><td style="text-align:center">${(r.s1 || r.s2 || r.s3 || r.s4) ? t : ''}</td><td>${esc(r.comment)}</td></tr>`; }).join('')}</tbody></table>`);
     return B;
   }
 

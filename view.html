@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1f4e8c">
+<title>자료 보기 · 상품 사슬 탐험</title>
+<link rel="icon" href="assets/icon-192.png" type="image/png">
+<style>
+  @font-face { font-family: 'Noto Sans KR'; font-weight: 400; src: url('fonts/NotoSansKR-400.woff2') format('woff2'); font-display: swap; }
+  @font-face { font-family: 'Noto Sans KR'; font-weight: 700; src: url('fonts/NotoSansKR-700.woff2') format('woff2'); font-display: swap; }
+  html, body { margin: 0; background: #14191f; color: #fff; font-family: 'Noto Sans KR', system-ui, sans-serif; }
+  .bar { position: sticky; top: 0; z-index: 2; display: flex; gap: 8px; align-items: center; padding: 8px 12px; background: #0d1116; box-shadow: 0 1px 4px rgba(0,0,0,.5); }
+  .bar .ttl { flex: 1; font-weight: 700; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .btn { border: 0; border-radius: 8px; padding: 7px 12px; font: inherit; font-size: .9rem; cursor: pointer; background: #2f6fc4; color: #fff; text-decoration: none; display: inline-flex; align-items: center; }
+  .btn.sec { background: #3a4654; }
+  .body { overflow: auto; -webkit-overflow-scrolling: touch; text-align: center; padding: 10px 0 30px; }
+  img { display: block; margin: 0 auto; width: min(100%, 900px); background: #fff; }
+  img.z2 { width: 1400px; max-width: none; }
+  .err { padding: 40px 16px; text-align: center; color: #ccc; }
+</style>
+</head>
+<body>
+<div class="bar"><span class="ttl" id="ttl">자료 보기</span><button class="btn sec" id="zoom" type="button">확대</button><a class="btn sec" id="pdf" target="_blank" rel="noopener" hidden>PDF 원본</a><button class="btn" id="close" type="button">닫기</button></div>
+<div class="body" id="body"></div>
+<script>
+(function () {
+  const q = new URLSearchParams(location.search);
+  const src = q.get('src') || '', pdf = q.get('pdf') || '', title = q.get('title') || '자료 보기';
+  const okImg = /^assets\/(ads|labels|va)\/[A-Za-z0-9_-]+\.png$/.test(src);
+  const okPdf = /^assets\/pdf\/[A-Za-z0-9_-]+\.(pdf|xlsx)$/.test(pdf);
+  document.getElementById('ttl').textContent = title; document.title = title + ' · 상품 사슬 탐험';
+  const body = document.getElementById('body');
+  if (!okImg) { body.innerHTML = '<div class="err">보여 줄 자료가 없습니다.</div>'; document.getElementById('zoom').hidden = true; }
+  else { const im = document.createElement('img'); im.src = src; im.alt = title; body.appendChild(im);
+    document.getElementById('zoom').addEventListener('click', function () { im.classList.toggle('z2'); this.textContent = im.classList.contains('z2') ? '원래 크기' : '확대'; }); }
+  const a = document.getElementById('pdf'); if (okPdf) { a.href = pdf; a.hidden = false; }
+  document.getElementById('close').addEventListener('click', function () { window.close(); if (!window.closed) history.back(); });
+})();
+</script>
+</body>
+</html>

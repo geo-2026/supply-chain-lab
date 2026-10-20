@@ -14,7 +14,7 @@ window.WS = (function () {
     { id: 'a4', short: '4', title: '4. [개별활동Ⅳ] 상품 사슬표 작성하기', res: 'va' },
     { id: 'a5', short: '5', title: '5. [개별활동Ⅴ] 상품 사슬 지도 작성하기', res: 'map' },
     { id: 'a6', short: '6', title: '6. [개별활동Ⅵ] 상품 사슬에서 가장 중요한 단계 찾기' },
-    { id: 'a7', short: '7', title: '7. [개별활동Ⅶ] 내가 생각하는 상품 사슬의 문제점' },
+    { id: 'a7', short: '7', title: '7. [개별활동Ⅶ] 내가 생각하는 상품 사슬' },
     { id: 'a8', short: '8', title: '8. [개별활동Ⅷ] 책임 있는 소비 방법' },
     { id: 'eval', short: '평가', title: '평가지' },
     { id: 'review', short: '점검·PDF', title: '제출 전 점검과 PDF 저장' }
@@ -31,9 +31,9 @@ window.WS = (function () {
     a4: () => ({ hq: '', rows: { raw: row('place', 'who', 'va', 'route'), make: row('place', 'who', 'va', 'route'), dist: row('place', 'who', 'va', 'route'), sale: row('place', 'who', 'va', 'route'), tax: row('va') }, insight: '' }),
     a5: () => ({ marks: row('hq', 'raw', 'factory', 'sale', 'route'), insight: '', manual: false, manualLegs: Array.from({ length: 5 }, () => row('from', 'to', 'mode', 'km')), manualImage: null }),
     a6: () => ({ topStage: '', topPlace: '', topVa: '', topReason: '', impStage: '', criterion: '', impReason: '', rawShareWon: '', topShareWon: '' }),
-    a7: () => ({ rows: { econ: row('problem', 'evidence'), labor: row('problem', 'evidence'), env: row('problem', 'evidence'), info: row('problem', 'evidence') }, worst: '', worstReason: '' }),
-    a8: () => ({ rows: Array.from({ length: 3 }, () => row('method', 'problemKey', 'problemText', 'plan')), company: '', gov: '', pledge: '' }),
-    eval: () => ({ reflection: '', rows: Array.from({ length: 6 }, () => row('name', 's1', 's2', 's3', 's4', 'comment')) })
+    a7: () => ({ pros: '', cons: '', solution: '' }),
+    a8: () => ({ method: '', company: '', gov: '', pledge: '' }),
+    eval: () => ({ reflection: '' })
   };
   const S = {};
   function loadState() {
@@ -44,7 +44,9 @@ window.WS = (function () {
       if (k === 'a2' && saved) S.a2.concept = Object.assign(DEF.a2().concept, saved.concept || {});
       if (k === 'a4' && saved) S.a4.rows = Object.assign(DEF.a4().rows, saved.rows || {});
       if (k === 'a5' && saved) S.a5.marks = Object.assign(DEF.a5().marks, saved.marks || {});
-      if (k === 'a7' && saved) S.a7.rows = Object.assign(DEF.a7().rows, saved.rows || {});
+      // 이전 형식(관점별 문제점 표 · 소비 방법 3줄) 기록을 새 칸으로 옮김
+      if (k === 'a7' && saved && saved.rows && !S.a7.cons) { const t = Object.values(saved.rows).map(r => [r.problem, r.evidence].filter(Boolean).join(' / ')).filter(Boolean).concat(saved.worstReason ? [saved.worstReason] : []).join('\n'); if (t) { S.a7.cons = t; save('a7'); } }
+      if (k === 'a8' && saved && Array.isArray(saved.rows) && !S.a8.method) { const t = saved.rows.map(r => [r.method, r.plan].filter(Boolean).join(' — ')).filter(Boolean).join('\n'); if (t) { S.a8.method = t; save('a8'); } }
     }
   }
   const save = k => STORE.set('ws:' + k, S[k]);
@@ -62,7 +64,6 @@ window.WS = (function () {
   const sel = (p, opts, blank) => `<select data-b="${p}">${blank !== false ? '<option value="">— 선택 —</option>' : ''}${opts.map(o => Array.isArray(o) ? `<option value="${esc(o[0])}">${esc(o[1])}</option>` : `<option value="${esc(o)}">${esc(o)}</option>`).join('')}</select>`;
   const auto = (id, v, unit) => `<input type="text" class="auto" readonly id="${id}" value="${esc(v)}" aria-label="자동 계산">${unit ? `<span class="small muted"> ${unit}</span>` : ''}`;
   const ox = p => `<div class="ox" data-ox="${p}"><button type="button" data-v="○">○ 예상함</button><button type="button" data-v="×">× 못 함</button></div>`;
-  const score = p => `<div class="score-btns" data-score="${p}"><button type="button" data-v="1">1</button><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button></div>`;
   const resBtn = (res, label) => res ? `<button class="btn sec sm" data-res="${res}">${label || '자료 보기'}</button>` : '';
 
   function bind(root, key, after) {
@@ -121,7 +122,7 @@ window.WS = (function () {
           <li><b>1차시</b> 수행평가 과정 설명 · 앱 접속 확인 → [Ⅰ] 제품 선택하기 → [Ⅱ] 제품 원료 예상하기, 부가가치 개념 알아보기 (자료 : 광고지·부가가치 개념)</li>
           <li><b>2차시</b> [Ⅲ] 제품 라벨 확인하기 → [Ⅳ] 상품 사슬표 작성하기 (자료 : 라벨·원료 가격·부가가치 자료)</li>
           <li><b>3차시</b> [Ⅴ] 상품 사슬 지도 작성하기 (지도 탭)</li>
-          <li><b>4차시</b> [Ⅵ] 가장 중요한 단계 찾기 → [Ⅶ] 상품 사슬의 문제점 → [Ⅷ] 책임 있는 소비 방법 → 발표, 활동지·지도 PDF 제출, 평가지 작성</li></ol></details>
+          <li><b>4차시</b> [Ⅵ] 가장 중요한 단계 찾기 → [Ⅶ] 내가 생각하는 상품 사슬 → [Ⅷ] 책임 있는 소비 방법 → 발표, 활동지·지도 PDF 제출, 평가지 작성</li></ol></details>
       </div>
       <div class="card">
         <h3>학생 정보 <span class="small muted">(필수)</span></h3>
@@ -150,7 +151,7 @@ window.WS = (function () {
     const cur = STORE.get('product');
     root.innerHTML = `
       <div class="q"><span class="num">1-1.</span>가상 상품 광고지 6종을 살펴보고, 내가 탐구할 제품 하나에 ✓ 표시해 봅시다.</div>
-      <div class="hint">광고지를 크게 보려면 카드의 [크게 보기]를 누르세요.</div>
+      <div class="hint">광고지를 크게 보려면 카드의 [크게 보기]를 누르세요. 새 탭에서 열리며, 다 보면 그 탭을 닫고 돌아오세요.</div>
       <div class="products">${DATA.PRODUCTS.map(p => `<button type="button" class="pcard ${cur === p.id ? 'sel' : ''}" data-p="${p.id}"><span class="tick">✓</span><span class="zoom" data-zoom="${p.no}">크게 보기</span><img src="assets/ads/ad${p.no}_thumb.png" alt="${esc(p.name)} 광고지"><div class="nm">${p.no === 1 ? '①' : p.no === 2 ? '②' : p.no === 3 ? '③' : p.no === 4 ? '④' : p.no === 5 ? '⑤' : '⑥'} ${esc(p.name)}</div><div class="sl">${esc(p.slogan)}</div><div class="pr">${esc(p.priceLabel)}</div></button>`).join('')}</div>
       <div class="q"><span class="num">1-2.</span>이 제품을 고른 이유를 적어봅시다.</div>${ta('reason', 300, '')}
       <div class="q"><span class="num">1-3.</span>광고를 꼼꼼히 읽고 정리해 봅시다.</div>
@@ -161,7 +162,7 @@ window.WS = (function () {
       </tbody></table></div>`;
     root.querySelector('.products').addEventListener('click', e => {
       const z = e.target.closest('[data-zoom]');
-      if (z) { e.preventDefault(); e.stopPropagation(); RES.openViewer(`assets/ads/ad${z.dataset.zoom}.png`, `광고지 ${z.dataset.zoom}`, `assets/pdf/ad${z.dataset.zoom}.pdf`); return; }
+      if (z) { e.preventDefault(); e.stopPropagation(); const n = z.dataset.zoom; RES.openTab(`assets/ads/ad${n}.png`, `광고지 ${n} · ${DATA.PRODUCTS[n - 1].name}`, `assets/pdf/ad${n}.pdf`); return; }
       const c = e.target.closest('.pcard'); if (!c) return;
       const id = c.dataset.p; const prev = STORE.get('product');
       if (prev === id) return;
@@ -197,7 +198,11 @@ window.WS = (function () {
           ${DATA.BREAD.rows.map((r, i) => `<tr><td class="lab">${r[0]}</td><td>${esc(r[1])}</td><td class="num">${won(r[2])}원</td><td class="num">${won(r[3])}원</td><td><div class="row" style="flex-wrap:nowrap"><input type="number" inputmode="numeric" data-b="concept.bread.${i}" style="min-width:70px"><span class="fixed">원 <span class="mark" data-m="bread.${i}"></span></span></div></td></tr>`).join('')}
           <tr><td colspan="4" class="right"><b>네 단계 부가가치의 합</b></td><td><div class="row" style="flex-wrap:nowrap"><input type="number" inputmode="numeric" data-b="concept.sum" style="min-width:70px"><span class="fixed">원 <span class="mark" data-m="sum"></span></span></div></td></tr>
         </tbody></table></div>
-        <p style="margin-top:10px">→ 네 단계 부가가치의 합은 ( ${txt('concept.s1', 30, '?')} <span class="mark" data-m="s1"></span> )과 같다.<br>소비자 가격 1,100원 중 100원은 ( ${txt('concept.s2', 20, '?')} <span class="mark" data-m="s2"></span> )이다.</p>
+        <p style="margin-top:10px">→ 네 단계 부가가치의 합은 ( <b>A</b> )과 같다.<br>소비자 가격 1,100원 중 100원은 ( <b>B</b> )이다.</p>
+        <div class="grid2">
+          <div><label class="f">A에 들어갈 가격은? <span class="mark" data-m="s1"></span></label><div class="row" style="flex-wrap:nowrap">${txt('concept.s1', 30, '')}<span class="fixed">원</span></div></div>
+          <div><label class="f">B에 들어갈 용어는? <span class="mark" data-m="s2"></span></label>${txt('concept.s2', 20, '')}</div>
+        </div>
         <div class="btnrow"><button class="btn" id="chk23">확인</button>${resBtn('va', '부가가치 개념 자료 보기')}</div><div id="msg23"></div>
       </div>`;
     const after = () => {
@@ -209,7 +214,7 @@ window.WS = (function () {
     root.querySelector('#addPred').addEventListener('click', () => { if (st.predict.length < 8) { st.predict.push(row('material', 'reason', 'country', 'price')); save('a2'); vA2(root); } });
     root.querySelector('#chk23').addEventListener('click', () => { const r = CHECK.concept(st.concept); st.concept.checked = true; save('a2');
       root.querySelectorAll('[data-m]').forEach(m => { const ok = r[m.dataset.m]; m.textContent = ok === true ? '○' : ok === false ? '다시 생각해 보기' : ''; m.className = 'mark ' + (ok ? 'ok' : 'no'); });
-      root.querySelector('#msg23').innerHTML = r.all ? '<div class="check-msg ok">모두 맞았어요! 부가가치 = 판 값 − 산 값, 네 단계의 합은 세금 빼기 전 판매 가격과 같습니다.</div>' : '<div class="check-msg warn">표시된 칸을 다시 생각해 보세요. (부가가치 개념 자료 참고)</div>'; });
+      root.querySelector('#msg23').innerHTML = r.all ? '<div class="check-msg ok">모두 맞았어요! 부가가치 = 판 값 − 산 값, 네 단계의 합(1,000원)은 세금 빼기 전 판매 가격과 같고, 100원은 부가가치세입니다.</div>' : '<div class="check-msg warn">표시된 칸을 다시 생각해 보세요. (부가가치 개념 자료 참고)</div>'; });
     if (st.concept.checked) root.querySelector('#chk23').click();
   }
 
@@ -219,6 +224,10 @@ window.WS = (function () {
     const mats = prod ? prod.raw.map(r => r.material) : [];
     const rowsHtml = () => st.compare.map((r, i) => `<tr><td data-l="실제 원료 (라벨)"><input type="text" data-b="compare.${i}.material" list="matList" maxlength="30" placeholder="원료 이름"></td><td data-l="예상했나요? (○ / ×)">${ox(`compare.${i}.predicted`)}</td><td data-l="라벨 표시 산지">${txt(`compare.${i}.origin`, 30, '')}</td><td data-l="수출용 도매 가격">${txt(`compare.${i}.price`, 30, '예 : 7.24 USD/kg')}</td><td data-l="제품 1단위 원료 비용(원)">${numIn(`compare.${i}.cost`, '원')}</td></tr>`).join('');
     root.innerHTML = `
+      ${prod ? `<div class="card labelcard"><div class="row" style="align-items:center"><h3 style="flex:1 1 200px;margin:0">내가 고른 제품의 라벨 : ${prod.no}. ${esc(prod.name)} <span class="badge auto">자동</span></h3><div class="btnrow fixed" style="margin:0"><button class="btn sm" id="labelZoom">확대하기</button><a class="btn sm ghost" href="assets/pdf/label${prod.no}.pdf" target="_blank" rel="noopener">PDF 원본</a></div></div>
+        <img class="labelimg" src="assets/labels/label${prod.no}.png" alt="${esc(prod.name)} 라벨">
+        <p class="small muted" style="margin:6px 0 0">글씨가 작으면 [확대하기]를 누르세요. 새 탭에서 크게 열립니다.</p></div>`
+        : `<div class="card warn">활동 1에서 제품을 고르면 그 제품의 라벨이 여기에 자동으로 나타납니다.</div>`}
       <div class="q"><span class="num">3-1.</span>제품 라벨에서 다음 정보를 찾아 적어봅시다.</div>
       <div class="tbl-wrap"><table class="tbl resp"><tbody>
         <tr><td class="lab" style="width:28%">제조국 (원산지)</td><td class="nolab">${txt('origin', 60, '')}</td></tr>
@@ -227,7 +236,7 @@ window.WS = (function () {
         <tr><td class="lab">라벨에 적힌<br>주요 원료와 산지</td><td class="nolab">${ta('rawList', 300, '예 : 시어버터(부르키나파소), 밀납(중국) …', 3)}</td></tr>
       </tbody></table></div>
       <div class="q"><span class="num">3-2.</span>예상한 원료와 라벨의 실제 원료를 비교해 봅시다. <span class="small muted">(자료의 원료 가격 참고)</span></div>
-      <div class="btnrow">${resBtn('prices', '원료 가격 자료 보기')}${resBtn('labels', '라벨 보기')}</div>
+      <div class="btnrow"><button class="btn sec sm" id="openPrices">원료 가격 자료 보기 (새 탭)</button></div>
       <datalist id="matList">${mats.map(m => `<option value="${esc(m)}">`).join('')}</datalist>
       <div class="tbl-wrap"><table class="tbl resp"><thead><tr><th>실제 원료 (라벨)</th><th>예상했나요?<br>(○ / ×)</th><th>라벨 표시 산지</th><th>수출용 도매 가격</th><th>제품 1단위 원료 비용</th></tr></thead><tbody>${rowsHtml()}</tbody>
       <tfoot><tr><td colspan="4" class="right">원료 비용 합계 <span class="badge auto">자동</span></td><td data-l="원료 비용 합계">${auto('cmpSum', '0', '원')}</td></tr></tfoot></table></div>
@@ -242,6 +251,8 @@ window.WS = (function () {
       root.querySelector('#prevRatio').textContent = pct(S.a2.predict.reduce((a, r) => a + num(r.price), 0), price);
     };
     bind(root, 'a3', after);
+    const lz = root.querySelector('#labelZoom'); if (lz) lz.addEventListener('click', () => RES.openTab(`assets/labels/label${prod.no}.png`, `라벨 ${prod.no} · ${prod.name}`, `assets/pdf/label${prod.no}.pdf`));
+    root.querySelector('#openPrices').addEventListener('click', () => RES.openResTab('prices'));
     root.querySelector('#addCmp').addEventListener('click', () => { if (st.compare.length < 12) { st.compare.push(row('material', 'predicted', 'origin', 'price', 'cost')); save('a3'); vA3(root); } });
     root.querySelector('#chk32').addEventListener('click', () => {
       if (!prod) { STORE.toast('먼저 제품을 골라 주세요.'); return; }
@@ -265,7 +276,8 @@ window.WS = (function () {
         <tr><td class="lab">부가가치세</td><td data-l="장소"><span class="auto-cell" style="display:block;padding:8px">정부</span></td><td data-l="누가 · 하는 일"><span class="auto-cell" style="display:block;padding:8px">—</span></td><td data-l="부가가치(원)">${numIn('rows.tax.va', '원')}</td><td data-l="비율(%) · 자동">${auto('pct_tax', '0.0', '%')}</td><td data-l="이동 경로"><span class="auto-cell" style="display:block;padding:8px">—</span></td></tr>
       </tbody><tfoot><tr><td colspan="3" class="right">합계 <span class="badge auto">자동</span></td><td data-l="부가가치 합계">${auto('vaSum', '0', '원')}</td><td data-l="비율">100%</td><td data-l="소비자 가격">소비자 가격 <b id="consPrice">${prod ? won(price) : '?'}</b>원</td></tr></tfoot></table></div>
       <div class="btnrow"><button class="btn sec sm" id="chk42">확인</button></div><div id="msg42"></div>
-      <div class="q"><span class="num">4-3.</span>상품 사슬표를 보고 알게 된 점을 적어봅시다.</div>${ta('insight', 300, '', 4)}`;
+      <div class="q"><span class="num">4-3.</span>상품 사슬표를 보고 알게 된 점을 적어봅시다.</div>${ta('insight', 300, '', 4)}
+      <div class="card soft" style="margin-top:14px"><p style="margin:0 0 8px">상품 사슬표를 다 썼으면 지도 탭에서 상품 사슬 지도를 만듭니다. 지도를 만든 뒤 활동 5로 이어집니다.</p><div class="btnrow"><button class="btn" data-res="map">지도 만들러 가기</button></div></div>`;
     const after = () => {
       let sum = 0;
       [...R.map(r => r[0]), 'tax'].forEach(k => { const v = num(st.rows[k].va); sum += v; root.querySelector('#pct_' + k).value = pct(v, price); });
@@ -291,19 +303,12 @@ window.WS = (function () {
   function vA5(root) {
     const st = S.a5;
     const places = MAP.getPlaces(), legs = MAP.getLegsForWorksheet(), img = STORE.get('map:image');
-    const done = { hq: places.some(p => p.role === 'hq'), raw: places.some(p => p.role === 'raw'), factory: places.some(p => p.role === 'factory'), sale: places.some(p => p.role === 'sale'), route: legs.length > 0 };
-    const M = [['hq', '브랜드 본사 위치'], ['raw', '주요 원료 생산지'], ['factory', '원산지 또는 제조국'], ['sale', '판매 · 소비 지역'], ['route', '운송 경로 (화살표)']];
     const tot = legs.reduce((a, l) => ({ land: a.land + (l.land || 0), sea: a.sea + (l.sea || 0) }), { land: 0, sea: 0 });
     root.innerHTML = `
-      <div class="q"><span class="num">5-1.</span>지도에 꼭 표시해야 할 내용입니다. 표시 방법을 정하고, 지도를 완성하면 ✓ 해 봅시다.</div>
-      <div class="hint">완성 칸은 지도 데이터로 자동 체크됩니다.</div>
-      <div class="tbl-wrap"><table class="tbl resp"><thead><tr><th>표시할 내용</th><th>표시 방법 (기호·색 등)</th><th>완성</th></tr></thead><tbody>
-        ${M.map(([k, n]) => `<tr><td class="lab">${n}</td><td data-l="표시 방법">${txt(`marks.${k}`, 40, k === 'route' ? '예 : 파란 실선 = 배, 주황 점선 = 도로' : `예 : ${DATA.ROLES[k].symbol} ${DATA.ROLES[k].name}`)}</td><td data-l="완성" class="center"><span class="badge ${done[k] ? 'ok' : ''}" style="font-size:1rem">${done[k] ? '✓ 완성' : '아직'}</span></td></tr>`).join('')}
-      </tbody></table></div>
-      <div class="q"><span class="num">5-2.</span>앱에서 완성한 지도의 이동 거리를 정리하고, 지도 PDF를 함께 제출합니다.</div>
+      <div class="q"><span class="num">5-1.</span>앱에서 완성한 지도의 이동 거리를 정리하고, 지도 PDF를 함께 제출합니다.</div>
       <div class="btnrow"><button class="btn sec sm" id="reloadMap">다시 불러오기</button>${resBtn('map', '지도 만들러 가기')}<button class="btn ghost sm" id="toggleManual">${st.manual ? '지도 앱 데이터 사용' : '직접 입력으로 전환'}</button><button class="btn ghost sm" id="mapPdf2">지도 PDF 저장</button></div>
       <div id="legArea"></div>
-      <div class="q"><span class="num">5-3.</span>지도를 완성하고 알게 된 점을 적어봅시다. <span class="small muted">(가장 먼 구간, 바닷길이 지나는 곳 등)</span></div>${ta('insight', 400, '', 5)}`;
+      <div class="q"><span class="num">5-2.</span>지도를 완성하고 알게 된 점을 적어봅시다. <span class="small muted">(가장 먼 구간, 바닷길이 지나는 곳 등)</span></div>${ta('insight', 400, '', 5)}`;
     const area = root.querySelector('#legArea');
     if (!st.manual) {
       area.innerHTML = legs.length ? `
@@ -362,25 +367,19 @@ window.WS = (function () {
   // ── 활동 7 ──
   function vA7(root) {
     root.innerHTML = `
-      <div class="q"><span class="num">7-1.</span>여러 관점에서 상품 사슬의 문제점을 찾아봅시다.</div>
-      <div class="tbl-wrap"><table class="tbl resp"><thead><tr><th>관점</th><th>문제점</th><th>근거 (자료 · 수치)</th></tr></thead><tbody>
-        ${Object.entries(VIEWS).map(([k, n]) => `<tr><td class="lab">${n.replace(' (', '<br>(')}</td><td data-l="문제점">${ta(`rows.${k}.problem`, 200, '', 3)}</td><td data-l="근거 (자료 · 수치)">${ta(`rows.${k}.evidence`, 150, '예 : 원료 생산지의 몫 0.6%', 3)}</td></tr>`).join('')}
-      </tbody></table></div>
-      <div class="q"><span class="num">7-2.</span>위의 문제점 중 가장 심각하다고 생각하는 것 하나를 고르고, 그 이유를 적어봅시다.</div>
-      <label class="f">가장 심각한 문제 (관점)</label>${sel('worst', Object.entries(VIEWS))}
-      <label class="f">이유</label>${ta('worstReason', 400, '', 5)}`;
+      <div class="hint">경제(부가가치 분배), 노동·인권, 환경, 정보·광고 등 여러 관점에서 생각해 보고, 활동 3~6에서 찾은 수치를 근거로 적으면 좋습니다.</div>
+      <div class="q"><span class="num">7-1.</span>상품 사슬의 장점</div>${ta('pros', 400, '예 : 여러 나라가 각자 잘하는 일을 나누어 맡아 싸고 다양한 상품을 살 수 있다 …', 5)}
+      <div class="q"><span class="num">7-2.</span>상품 사슬의 문제점 또는 단점</div>${ta('cons', 500, '예 : 원료 생산지의 몫이 0.6%에 불과하다, 먼 거리를 운송해 탄소 배출이 많다 …', 6)}
+      <div class="q"><span class="num">7-3.</span>문제점 해결 방안</div>${ta('solution', 500, '', 6)}`;
     bind(root, 'a7');
   }
 
   // ── 활동 8 ──
   function vA8(root) {
-    const st = S.a8;
     root.innerHTML = `
-      <div class="q"><span class="num">8-1.</span>7번에서 찾은 문제를 줄이기 위한 책임 있는 소비 방법을 정리해 봅시다.</div>
+      <div class="q"><span class="num">8-1.</span>책임있는 소비 방법 알아보기</div>
       <div class="hint">참고 : 공정무역 인증 확인, 원산지·성분 표시 읽기, 오래 쓰기·고쳐 쓰기, 중고 거래, 분리배출, 꼭 필요한 만큼 사기 등</div>
-      <div class="tbl-wrap"><table class="tbl resp"><thead><tr><th>책임 있는 소비 방법</th><th>해결하려는 문제 (7번과 연결)</th><th>실천 계획 (언제 · 어디서 · 얼마나)</th></tr></thead><tbody>
-        ${st.rows.map((r, i) => `<tr><td data-l="책임 있는 소비 방법">${ta(`rows.${i}.method`, 100, '', 3)}</td><td data-l="해결하려는 문제">${sel(`rows.${i}.problemKey`, Object.entries(VIEWS))}${ta(`rows.${i}.problemText`, 100, '어떤 문제를 줄이나요?', 2)}</td><td data-l="실천 계획">${ta(`rows.${i}.plan`, 150, '', 3)}</td></tr>`).join('')}
-      </tbody></table></div>
+      ${ta('method', 600, '', 7)}
       <div class="q"><span class="num">8-2.</span>소비자 한 사람의 실천만으로 부족한 점은 무엇일까요? 기업과 정부·국제사회가 할 일도 적어봅시다.</div>
       <div class="tbl-wrap"><table class="tbl resp"><tbody>
         <tr><td class="lab" style="width:25%">기업</td><td class="nolab">${ta('company', 200, '', 3)}</td></tr>
@@ -392,17 +391,12 @@ window.WS = (function () {
 
   // ── 평가지 ──
   function vEval(root) {
-    const s = student(); const st = S.eval;
+    const s = student();
     root.innerHTML = `
       <div class="card soft"><b>평가자</b> : 세계시민과 지리 ${esc(s.classNo || '( )')}반 ${esc(s.number || '( )')}번 이름 ${esc(s.name || '(        )')} <span class="badge auto">자동</span></div>
       <div class="q"><span class="num">1.</span>자기 성찰</div>
-      <label class="f">광고만 보았을 때와 상품 사슬을 따라간 뒤, 이 제품을 보는 나의 생각은 어떻게 달라졌나요?</label>${ta('reflection', 400, '', 5)}
-      <div class="q"><span class="num">2.</span>상품 사슬 지도 발표 평가 <span class="small muted">(친구의 발표를 듣고 평가, 각 항목 3점 만점)</span></div>
-      <div class="tbl-wrap"><table class="tbl resp"><thead><tr><th>친구 이름</th><th>상품 사슬표의 정확성</th><th>지도 필수 요소 표시</th><th>문제점 인식의 타당성</th><th>소비 실천의 구체성</th><th>합계</th><th>한 줄 평</th></tr></thead><tbody>
-        ${st.rows.map((r, i) => `<tr><td data-l="친구 이름">${txt(`rows.${i}.name`, 20, '')}</td><td data-l="상품 사슬표의 정확성">${score(`rows.${i}.s1`)}</td><td data-l="지도 필수 요소 표시">${score(`rows.${i}.s2`)}</td><td data-l="문제점 인식의 타당성">${score(`rows.${i}.s3`)}</td><td data-l="소비 실천의 구체성">${score(`rows.${i}.s4`)}</td><td data-l="합계 · 자동">${auto('evSum' + i, '0', '/ 12')}</td><td data-l="한 줄 평">${txt(`rows.${i}.comment`, 60, '')}</td></tr>`).join('')}
-      </tbody></table></div>`;
-    const after = () => st.rows.forEach((r, i) => { const t = num(r.s1) + num(r.s2) + num(r.s3) + num(r.s4); root.querySelector('#evSum' + i).value = (r.s1 || r.s2 || r.s3 || r.s4) ? t : ''; });
-    bind(root, 'eval', after);
+      <label class="f">광고만 보았을 때와 상품 사슬을 따라간 뒤, 이 제품을 보는 나의 생각은 어떻게 달라졌나요?</label>${ta('reflection', 400, '', 5)}`;
+    bind(root, 'eval');
   }
 
   // ── 점검 ──
@@ -425,19 +419,18 @@ window.WS = (function () {
     chk('a4', '4-1 브랜드 본사 위치', S.a4.hq, '[data-b="hq"]');
     chk('a4', '4-2 사슬표 (장소·하는 일·부가가치)', ['raw', 'make', 'dist', 'sale'].every(k => S.a4.rows[k].place && S.a4.rows[k].who && S.a4.rows[k].va !== '') && S.a4.rows.tax.va !== '', '[data-b="rows.raw.place"]');
     chk('a4', '4-3 알게 된 점', S.a4.insight, '[data-b="insight"]');
-    chk('a5', '5-1 표시 방법', Object.values(S.a5.marks).every(v => v), '[data-b="marks.hq"]');
-    chk('a5', '5-2 지도 데이터 (구간·이미지)', S.a5.manual ? S.a5.manualLegs.some(r => r.from && r.km) : (MAP.getLegsForWorksheet().length > 0 && STORE.get('map:image')), '#legArea');
-    chk('a5', '5-3 알게 된 점', S.a5.insight, '[data-b="insight"]');
+    chk('a5', '5-1 지도 데이터 (구간·이미지)', S.a5.manual ? S.a5.manualLegs.some(r => r.from && r.km) : (MAP.getLegsForWorksheet().length > 0 && STORE.get('map:image')), '#legArea');
+    chk('a5', '5-2 알게 된 점', S.a5.insight, '[data-b="insight"]');
     chk('a6', '6-1 단계·장소·부가가치·까닭', S.a6.topStage && S.a6.topPlace && S.a6.topVa !== '' && S.a6.topReason, '[data-b="topStage"]');
     chk('a6', '6-2 가장 중요한 단계·기준·이유', S.a6.impStage && S.a6.criterion && S.a6.impReason, '[data-b="impStage"]');
     chk('a6', '6-3 몫 비교', S.a6.rawShareWon !== '' && S.a6.topShareWon !== '', '[data-b="rawShareWon"]');
-    chk('a7', '7-1 네 관점의 문제점·근거', Object.values(S.a7.rows).every(r => r.problem && r.evidence), '[data-b="rows.econ.problem"]');
-    chk('a7', '7-2 가장 심각한 문제와 이유', S.a7.worst && S.a7.worstReason, '[data-b="worst"]');
-    chk('a8', '8-1 소비 방법 (1줄 이상 완성)', S.a8.rows.some(r => r.method && r.problemKey && r.plan), '[data-b="rows.0.method"]');
+    chk('a7', '7-1 상품 사슬의 장점', S.a7.pros, '[data-b="pros"]');
+    chk('a7', '7-2 문제점 또는 단점', S.a7.cons, '[data-b="cons"]');
+    chk('a7', '7-3 해결 방안', S.a7.solution, '[data-b="solution"]');
+    chk('a8', '8-1 책임 있는 소비 방법', S.a8.method, '[data-b="method"]');
     chk('a8', '8-2 기업 · 정부·국제사회', S.a8.company && S.a8.gov, '[data-b="company"]');
     chk('a8', '8-3 나의 소비 다짐', S.a8.pledge, '[data-b="pledge"]');
     chk('eval', '자기 성찰', S.eval.reflection, '[data-b="reflection"]');
-    chk('eval', '발표 평가 (1명 이상)', S.eval.rows.some(r => r.name && r.s1), '[data-b="rows.0.name"]');
     return items;
   }
   function isDone(step) { if (step === 'review') return false; const it = emptyCounts().filter(i => i.step === step); return it.length > 0 && it.every(i => i.ok); }
@@ -477,8 +470,9 @@ window.CHECK = (function () {
     r.blank2 = buyWord(c.blank2);
     DATA.BREAD.answers.forEach((a, i) => { r['bread.' + i] = Number(c.bread[i]) === a; });
     r.sum = Number(c.sum) === DATA.BREAD.sum;
-    const s1 = norm(c.s1);
-    r.s1 = s1.length > 0 && /판매|판값|팔/.test(s1) && /가격|금액|값|액/.test(s1);
+    // A : 세금 빼기 전 판매 가격 1,000원 — 숫자(1000)나 ‘판매 가격’이라는 말 둘 다 인정
+    const s1 = norm(c.s1); const s1n = Number(String(c.s1 ?? '').replace(/[^\d.]/g, ''));
+    r.s1 = s1n === 1000 || (s1.length > 0 && /판매|판값|팔/.test(s1) && /가격|금액|값|액/.test(s1));
     const s2 = norm(c.s2);
     r.s2 = s2.length > 0 && /세/.test(s2);
     r.all = Object.values(r).every(v => v === true);

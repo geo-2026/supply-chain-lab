@@ -1,5 +1,5 @@
 /* 서비스 워커 — 앱 전체를 캐시해 인터넷 없이도 동작 */
-const VERSION = 'scl-v1.1.0';
+const VERSION = 'scl-v1.2.0';
 const FILES = [
   './', './index.html', './view.html', './manifest.webmanifest', './css/app.css',
   './js/data.js', './js/geo.js', './js/store.js', './js/map.js', './js/resources.js', './js/worksheet.js', './js/pdf.js', './js/main.js',

@@ -442,7 +442,7 @@ window.MAP = (function () {
     document.getElementById('legList').addEventListener('click', e => { const li = e.target.closest('li[data-id]'); if (li && e.target.dataset.act === 'del') removeLeg(li.dataset.id); });
     document.getElementById('btnPreset').addEventListener('click', () => {
       const prod = DATA.productById[STORE.get('product')];
-      if (!prod) { STORE.toast('먼저 활동 1에서 제품을 골라 주세요.'); return; }
+      if (!prod) { STORE.toast('먼저 활동지의 광고지 화면에서 제품을 골라 주세요.'); return; }
       APP.confirm(`「${prod.name}」의 기본 장소와 경로를 불러옵니다. 지금 지도에 있는 장소·구간은 지워집니다. 계속할까요?`, () => loadPreset(prod));
     });
     document.getElementById('btnClearMap').addEventListener('click', () => APP.confirm('지도의 장소와 구간을 모두 지울까요?', clearMap));

@@ -8,6 +8,7 @@ window.WS = (function () {
 
   const STEPS = [
     { id: 'start', short: '시작', title: '시작 · 학생 정보' },
+    { id: 'ads', short: '광고지', title: '가상 상품 광고지 살펴보기 · 제품 고르기' },
     { id: 'a1', short: '1', title: '1. [개별활동Ⅰ] 제품 선택하기 (광고지)', res: 'ads' },
     { id: 'a2', short: '2', title: '2. [개별활동Ⅱ] 제품 원료 예상하기', res: 'va' },
     { id: 'a3', short: '3', title: '3. [개별활동Ⅲ] 제품 라벨 확인하기', res: 'labels' },
@@ -98,10 +99,10 @@ window.WS = (function () {
     const prod = product();
     let html = `<div id="progress">${STEPS.map(s => `<button data-step="${s.id}" class="${s.id === st.id ? 'active' : ''} ${isDone(s.id) ? 'done' : ''}">${s.short}</button>`).join('')}</div>
       <div class="row" style="align-items:flex-start"><h2 style="flex:1 1 200px;margin:4px 0 10px">${esc(st.title)}</h2>${st.res ? `<div class="fixed">${resBtn(st.res, st.res === 'map' ? '지도 열기' : '자료 보기')}</div>` : ''}</div>`;
-    if (st.id !== 'start' && st.id !== 'review' && !prod && st.id !== 'a1') html += `<div class="card warn">아직 제품을 고르지 않았습니다. 활동 1에서 제품을 고르면 판매 가격 등 자동 값이 채워집니다.</div>`;
+    if (st.id !== 'start' && st.id !== 'review' && !prod && st.id !== 'ads') html += `<div class="card warn">아직 제품을 고르지 않았습니다. <button class="btn sm sec" data-go="#ws/ads" style="margin-left:6px">광고지 보고 제품 고르기</button> 제품을 고르면 광고지·라벨이 자동으로 나타나고 판매 가격 등 자동 값이 채워집니다.</div>`;
     const body = document.createElement('div');
     main.innerHTML = html; main.appendChild(body);
-    ({ start: vStart, a1: vA1, a2: vA2, a3: vA3, a4: vA4, a5: vA5, a6: vA6, a7: vA7, a8: vA8, eval: vEval, review: vReview })[st.id](body);
+    ({ start: vStart, ads: vAds, a1: vA1, a2: vA2, a3: vA3, a4: vA4, a5: vA5, a6: vA6, a7: vA7, a8: vA8, eval: vEval, review: vReview })[st.id](body);
     main.querySelector('#progress').addEventListener('click', e => { const b = e.target.closest('button'); if (b) APP.go('#ws/' + b.dataset.step); });
     const act = main.querySelector('#progress .active'); if (act) act.scrollIntoView({ inline: 'center', block: 'nearest' });
     return st;
@@ -131,7 +132,7 @@ window.WS = (function () {
           <div><label class="f" for="stNo">번호 <span class="req">*</span></label><input type="number" inputmode="numeric" id="stNo" min="1" max="50" value="${esc(s.number)}"></div>
           <div><label class="f" for="stName">이름 <span class="req">*</span></label><input type="text" id="stName" maxlength="20" value="${esc(s.name)}"></div>
         </div>
-        <p style="margin-top:12px">선택한 제품 : ${prod ? `<b>${prod.no}. ${esc(prod.name)}</b> <span class="muted">(${esc(prod.full)} · ${esc(prod.priceLabel)})</span>` : '<span class="muted">아직 없음 — 활동 1에서 고릅니다</span>'}</p>
+        <p style="margin-top:12px">선택한 제품 : ${prod ? `<b>${prod.no}. ${esc(prod.name)}</b> <span class="muted">(${esc(prod.full)} · ${esc(prod.priceLabel)})</span>` : '<span class="muted">아직 없음 — 다음 화면(광고지)에서 고릅니다</span>'}</p>
       </div>
       <div class="card">
         <h3>백업 · 초기화</h3>
@@ -146,13 +147,41 @@ window.WS = (function () {
     root.querySelector('#btnClear').addEventListener('click', APP.clearAll);
   }
 
-  // ── 활동 1 ──
-  function vA1(root) {
+  // ── 광고지 · 제품 고르기 ──
+  const circ = n => ['①', '②', '③', '④', '⑤', '⑥'][n - 1] || n;
+  function openAd(n) { RES.openTab(`assets/ads/ad${n}.png`, `광고지 ${n} · ${DATA.PRODUCTS[n - 1].name}`, `assets/pdf/ad${n}.pdf`); }
+  function vAds(root) {
     const cur = STORE.get('product');
     root.innerHTML = `
-      <div class="q"><span class="num">1-1.</span>가상 상품 광고지 6종을 살펴보고, 내가 탐구할 제품 하나에 ✓ 표시해 봅시다.</div>
+      <div class="card soft"><p style="margin:0">가상 상품 광고지 6종을 살펴보고, 내가 탐구할 제품 하나를 골라 카드를 누르세요. 고른 제품의 광고지는 <b>활동 1</b>에 자동으로 나타납니다.</p></div>
       <div class="hint">광고지를 크게 보려면 카드의 [크게 보기]를 누르세요. 새 탭에서 열리며, 다 보면 그 탭을 닫고 돌아오세요.</div>
-      <div class="products">${DATA.PRODUCTS.map(p => `<button type="button" class="pcard ${cur === p.id ? 'sel' : ''}" data-p="${p.id}"><span class="tick">✓</span><span class="zoom" data-zoom="${p.no}">크게 보기</span><img src="assets/ads/ad${p.no}_thumb.png" alt="${esc(p.name)} 광고지"><div class="nm">${p.no === 1 ? '①' : p.no === 2 ? '②' : p.no === 3 ? '③' : p.no === 4 ? '④' : p.no === 5 ? '⑤' : '⑥'} ${esc(p.name)}</div><div class="sl">${esc(p.slogan)}</div><div class="pr">${esc(p.priceLabel)}</div></button>`).join('')}</div>
+      <div class="products">${DATA.PRODUCTS.map(p => `<button type="button" class="pcard ${cur === p.id ? 'sel' : ''}" data-p="${p.id}"><span class="tick">✓</span><span class="zoom" data-zoom="${p.no}">크게 보기</span><img src="assets/ads/ad${p.no}_thumb.png" alt="${esc(p.name)} 광고지"><div class="nm">${circ(p.no)} ${esc(p.name)}</div><div class="sl">${esc(p.slogan)}</div><div class="pr">${esc(p.priceLabel)}</div></button>`).join('')}</div>
+      <div class="card soft" id="adsNext" style="margin-top:14px"><p style="margin:0 0 8px">${cur ? `선택한 제품 : <b>${DATA.productById[cur].no}. ${esc(DATA.productById[cur].name)}</b>` : '아직 제품을 고르지 않았습니다.'}</p><div class="btnrow"><button class="btn" data-go="#ws/a1" ${cur ? '' : 'disabled'}>활동 1로 가기</button></div></div>`;
+    root.querySelector('.products').addEventListener('click', e => {
+      const z = e.target.closest('[data-zoom]');
+      if (z) { e.preventDefault(); e.stopPropagation(); openAd(Number(z.dataset.zoom)); return; }
+      const c = e.target.closest('.pcard'); if (!c) return;
+      const id = c.dataset.p; const prev = STORE.get('product');
+      if (prev === id) return;
+      const apply = () => {
+        STORE.set('product', id, true); root.querySelectorAll('.pcard').forEach(x => x.classList.toggle('sel', x.dataset.p === id));
+        const pr = DATA.productById[id]; root.querySelector('#adsNext p').innerHTML = `선택한 제품 : <b>${pr.no}. ${esc(pr.name)}</b>`; root.querySelector('#adsNext button').disabled = false;
+        STORE.toast(`「${pr.name}」을(를) 골랐습니다. 활동 1에서 광고지를 확인하세요.`);
+      };
+      if (prev) APP.confirm('제품을 바꾸면 활동 3~6의 일부 자동 값(판매 가격·비율 등)이 바뀝니다. 바꿀까요?', apply); else apply();
+    });
+  }
+
+  // ── 활동 1 ──
+  function vA1(root) {
+    const prod = product();
+    root.innerHTML = `
+      ${prod ? `<div class="card labelcard" id="adCard"><div class="row" style="align-items:center"><h3 style="flex:1 1 200px;margin:0">내가 고른 제품의 광고지 : ${prod.no}. ${esc(prod.name)} <span class="badge auto">자동</span></h3><div class="btnrow fixed" style="margin:0"><button class="btn sm" id="adZoom">확대하기</button><a class="btn sm ghost" href="assets/pdf/ad${prod.no}.pdf" target="_blank" rel="noopener">PDF 원본</a><button class="btn sm ghost" data-go="#ws/ads">다른 제품 고르기</button></div></div>
+        <img class="adimg" src="assets/ads/ad${prod.no}.png" alt="${esc(prod.name)} 광고지">
+        <p class="small muted" style="margin:6px 0 0">글씨가 작으면 [확대하기]를 누르세요. 새 탭에서 크게 열립니다.</p></div>`
+        : `<div class="card warn">광고지 화면에서 제품을 고르면 그 광고지가 여기에 자동으로 나타납니다. <button class="btn sm sec" data-go="#ws/ads">광고지 보러 가기</button></div>`}
+      <div class="q"><span class="num">1-1.</span>가상 상품 광고지 6종을 살펴보고, 내가 탐구할 제품 하나에 ✓ 표시해 봅시다.</div>
+      <div class="card soft" id="pickBox"><p style="margin:0">${prod ? `<span class="badge ok">✓ 선택</span> <b>${circ(prod.no)} ${esc(prod.name)}</b> <span class="muted">(${esc(prod.full)} · ${esc(prod.slogan)} · ${esc(prod.priceLabel)})</span>` : '<span class="muted">아직 고르지 않았습니다. 위의 [광고지 보러 가기]를 누르세요.</span>'}</p></div>
       <div class="q"><span class="num">1-2.</span>이 제품을 고른 이유를 적어봅시다.</div>${ta('reason', 300, '')}
       <div class="q"><span class="num">1-3.</span>광고를 꼼꼼히 읽고 정리해 봅시다.</div>
       <div class="tbl-wrap"><table class="tbl resp"><tbody>
@@ -160,15 +189,7 @@ window.WS = (function () {
         <tr><td class="lab">광고가 강조하는 장점</td><td class="nolab">${ta('adPros', 150, '', 2)}</td></tr>
         <tr><td class="lab">광고가 말하지 않는 것<br>(예상)</td><td class="nolab">${ta('adHidden', 200, '예 : 원료가 어디서 왔는지, 누가 만들었는지, 가격 중 원료 값은 얼마인지…', 3)}</td></tr>
       </tbody></table></div>`;
-    root.querySelector('.products').addEventListener('click', e => {
-      const z = e.target.closest('[data-zoom]');
-      if (z) { e.preventDefault(); e.stopPropagation(); const n = z.dataset.zoom; RES.openTab(`assets/ads/ad${n}.png`, `광고지 ${n} · ${DATA.PRODUCTS[n - 1].name}`, `assets/pdf/ad${n}.pdf`); return; }
-      const c = e.target.closest('.pcard'); if (!c) return;
-      const id = c.dataset.p; const prev = STORE.get('product');
-      if (prev === id) return;
-      const apply = () => { STORE.set('product', id, true); root.querySelectorAll('.pcard').forEach(x => x.classList.toggle('sel', x.dataset.p === id)); STORE.toast(`「${DATA.productById[id].name}」을(를) 골랐습니다.`); };
-      if (prev) APP.confirm('제품을 바꾸면 활동 3~6의 일부 자동 값(판매 가격·비율 등)이 바뀝니다. 바꿀까요?', apply); else apply();
-    });
+    const z = root.querySelector('#adZoom'); if (z) z.addEventListener('click', () => openAd(prod.no));
     bind(root, 'a1');
   }
 
@@ -227,7 +248,7 @@ window.WS = (function () {
       ${prod ? `<div class="card labelcard"><div class="row" style="align-items:center"><h3 style="flex:1 1 200px;margin:0">내가 고른 제품의 라벨 : ${prod.no}. ${esc(prod.name)} <span class="badge auto">자동</span></h3><div class="btnrow fixed" style="margin:0"><button class="btn sm" id="labelZoom">확대하기</button><a class="btn sm ghost" href="assets/pdf/label${prod.no}.pdf" target="_blank" rel="noopener">PDF 원본</a></div></div>
         <img class="labelimg" src="assets/labels/label${prod.no}.png" alt="${esc(prod.name)} 라벨">
         <p class="small muted" style="margin:6px 0 0">글씨가 작으면 [확대하기]를 누르세요. 새 탭에서 크게 열립니다.</p></div>`
-        : `<div class="card warn">활동 1에서 제품을 고르면 그 제품의 라벨이 여기에 자동으로 나타납니다.</div>`}
+        : `<div class="card warn">광고지 화면에서 제품을 고르면 그 제품의 라벨이 여기에 자동으로 나타납니다.</div>`}
       <div class="q"><span class="num">3-1.</span>제품 라벨에서 다음 정보를 찾아 적어봅시다.</div>
       <div class="tbl-wrap"><table class="tbl resp"><tbody>
         <tr><td class="lab" style="width:28%">제조국 (원산지)</td><td class="nolab">${txt('origin', 60, '')}</td></tr>
@@ -267,6 +288,7 @@ window.WS = (function () {
     const prod = product(); const st = S.a4; const price = prod ? prod.price : 0;
     const R = [['raw', '원료'], ['make', '제조'], ['dist', '유통'], ['sale', '판매']];
     root.innerHTML = `
+      <div class="card soft" style="margin-bottom:14px"><div class="row" style="align-items:center"><p style="flex:1 1 220px;margin:0">상품 사슬표를 쓰면서 <b>지도 탭</b>에서 상품 사슬 지도를 함께 만듭니다. 지도를 만든 뒤 활동 5로 이어집니다.</p><div class="btnrow fixed" style="margin:0"><button class="btn" data-res="map">지도 만들러 가기</button></div></div></div>
       <div class="q"><span class="num">4-1.</span>브랜드 본사 위치 <span class="small muted">(나라 / 도시)</span></div>${txt('hq', 60, '예 : 프랑스 / 파리')}
       <div class="q"><span class="num">4-2.</span>단계별로 장소, 하는 일, 부가가치, 이동 경로를 정리해 봅시다.</div>
       <div class="hint">장소 : 원료는 주요 원료 생산지, 제조는 제조국·공장 위치, 유통·판매는 회사·매장 위치를 적으세요. 부가가치는 자료의 「부가가치 따라가기」 표를 참고합니다.</div>
@@ -276,8 +298,7 @@ window.WS = (function () {
         <tr><td class="lab">부가가치세</td><td data-l="장소"><span class="auto-cell" style="display:block;padding:8px">정부</span></td><td data-l="누가 · 하는 일"><span class="auto-cell" style="display:block;padding:8px">—</span></td><td data-l="부가가치(원)">${numIn('rows.tax.va', '원')}</td><td data-l="비율(%) · 자동">${auto('pct_tax', '0.0', '%')}</td><td data-l="이동 경로"><span class="auto-cell" style="display:block;padding:8px">—</span></td></tr>
       </tbody><tfoot><tr><td colspan="3" class="right">합계 <span class="badge auto">자동</span></td><td data-l="부가가치 합계">${auto('vaSum', '0', '원')}</td><td data-l="비율">100%</td><td data-l="소비자 가격">소비자 가격 <b id="consPrice">${prod ? won(price) : '?'}</b>원</td></tr></tfoot></table></div>
       <div class="btnrow"><button class="btn sec sm" id="chk42">확인</button></div><div id="msg42"></div>
-      <div class="q"><span class="num">4-3.</span>상품 사슬표를 보고 알게 된 점을 적어봅시다.</div>${ta('insight', 300, '', 4)}
-      <div class="card soft" style="margin-top:14px"><p style="margin:0 0 8px">상품 사슬표를 다 썼으면 지도 탭에서 상품 사슬 지도를 만듭니다. 지도를 만든 뒤 활동 5로 이어집니다.</p><div class="btnrow"><button class="btn" data-res="map">지도 만들러 가기</button></div></div>`;
+      <div class="q"><span class="num">4-3.</span>상품 사슬표를 보고 알게 된 점을 적어봅시다.</div>${ta('insight', 300, '', 4)}`;
     const after = () => {
       let sum = 0;
       [...R.map(r => r[0]), 'tax'].forEach(k => { const v = num(st.rows[k].va); sum += v; root.querySelector('#pct_' + k).value = pct(v, price); });
@@ -405,7 +426,7 @@ window.WS = (function () {
     const items = [];
     const chk = (step, label, ok, focus) => items.push({ step, label, ok: !!ok, focus });
     chk('start', '반·번호·이름', s.classNo && s.number && s.name, '#stClass');
-    chk('a1', '1-1 제품 선택', prod, '.products');
+    chk('ads', '제품 고르기 (1-1)', prod, '.products');
     chk('a1', '1-2 고른 이유', S.a1.reason, '[data-b="reason"]');
     chk('a1', '1-3 강조하는 나라·장소', S.a1.adPlace, '[data-b="adPlace"]');
     chk('a1', '1-3 강조하는 장점', S.a1.adPros, '[data-b="adPros"]');

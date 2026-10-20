@@ -408,5 +408,5 @@ window.DATA = (function () {
 
   return { GAZ, gazById, SEA_NODES, SEA_EDGES, PRODUCTS, productById, ROLES, BREAD,
     ROAD_FACTOR: 1.3, // 도로는 직선거리의 약 1.3배 (평균적인 우회율)
-    VERSION: '1.1.0' };
+    VERSION: '1.2.0' };
 })();

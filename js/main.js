@@ -38,7 +38,7 @@ window.APP = (function () {
       </div>
       <div class="card">
         <p><b>${s.name ? `${s.classNo}반 ${s.number}번 ${s.name}` : '학생 정보 미입력'}</b> · 선택한 제품 : ${prod ? `<b>${prod.no}. ${prod.name}</b>` : '아직 없음'} · 남은 빈칸 : <b>${miss}</b>개</p>
-        <div class="btnrow"><button class="btn" data-go="#ws/${s.name ? (prod ? 'a1' : 'a1') : 'start'}">활동지 ${s.name ? '이어서 하기' : '시작하기'}</button><button class="btn sec" data-go="#res/ads">자료 보기</button><button class="btn sec" data-go="#map">지도 만들기</button></div>
+        <div class="btnrow"><button class="btn" data-go="#ws/${s.name ? (prod ? 'a1' : 'ads') : 'start'}">활동지 ${s.name ? '이어서 하기' : '시작하기'}</button><button class="btn sec" data-go="#res/ads">자료 보기</button><button class="btn sec" data-go="#map">지도 만들기</button></div>
       </div>
       <div class="grid3">
         <div class="card"><h3>① 자료</h3><p class="small">광고지 6종, 라벨 6종, 부가가치 학습자료, 라벨 원료 가격표(2026-08-01 기준)를 봅니다.</p><button class="btn ghost sm" data-go="#res/ads">열기</button></div>
@@ -103,7 +103,7 @@ window.APP = (function () {
     document.getElementById('tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; go(b.dataset.tab === 'ws' ? '#ws/' + lastWsStep : b.dataset.tab === 'res' ? '#res/ads' : '#' + b.dataset.tab); });
     document.getElementById('btnPrev').addEventListener('click', () => { const i = WS.stepIndex(lastWsStep); if (i > 0) go('#ws/' + WS.STEPS[i - 1].id); });
     document.getElementById('btnNext').addEventListener('click', () => { const i = WS.stepIndex(lastWsStep); if (i < WS.STEPS.length - 1) go('#ws/' + WS.STEPS[i + 1].id); });
-    document.body.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b && b.dataset.go) go(b.dataset.go); });
+    document.body.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b && b.dataset.go && b.dataset.go.startsWith('#')) go(b.dataset.go); });
     window.addEventListener('hashchange', route);
     route();
     if ('serviceWorker' in navigator) { try { await navigator.serviceWorker.register('sw.js'); } catch (e) { console.warn('SW 등록 실패', e); } }

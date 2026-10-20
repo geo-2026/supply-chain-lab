@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f4e8c">
+<meta name="description" content="2026 세계시민과 지리 수행평가 · 가상 상품으로 따라가는 상품 사슬 프로젝트 — 자료·지도·활동지 앱">
+<title>상품 사슬 탐험</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="assets/icon-192.png">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header id="topbar">
+  <div class="inner">
+    <span class="title">상품 사슬 탐험</span>
+    <span id="saveStatus" data-state="saved">저장됨</span>
+  </div>
+  <nav id="tabs" aria-label="주 메뉴">
+    <button data-tab="home">홈</button>
+    <button data-tab="res">자료</button>
+    <button data-tab="map">지도</button>
+    <button data-tab="ws">활동지</button>
+  </nav>
+</header>
+<main id="main"><div class="card">불러오는 중…</div></main>
+<div id="navbar" hidden>
+  <div class="inner">
+    <button class="btn sec" id="btnPrev">이전</button>
+    <span class="spacer" id="navPos"></span>
+    <button class="btn" id="btnNext">다음</button>
+  </div>
+</div>
+<div id="toast" hidden></div>
+<div id="pdfRoot" aria-hidden="true"></div>
+
+<script src="lib/localforage.min.js"></script>
+<script src="lib/html2canvas.min.js"></script>
+<script src="lib/jspdf.umd.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/geo.js"></script>
+<script src="js/store.js"></script>
+<script src="js/map.js"></script>
+<script src="js/resources.js"></script>
+<script src="js/worksheet.js"></script>
+<script src="js/pdf.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

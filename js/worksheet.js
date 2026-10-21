@@ -27,7 +27,7 @@ window.WS = (function () {
   const row = (...ks) => Object.fromEntries(ks.map(k => [k, '']));
   const DEF = {
     a1: () => ({ reason: '', adPlace: '', adPros: '', adHidden: '' }),
-    a2: () => ({ predict: Array.from({ length: 5 }, () => row('material', 'reason', 'country', 'price')), ratioReason: '', concept: { blank1: '', blank2: '', bread: ['', '', '', ''], sum: '', s1: '', s2: '', checked: false } }),
+    a2: () => ({ predict: Array.from({ length: 5 }, () => row('material', 'reason', 'country', 'price')), ratioReason: '', concept: { blank1: '', blank2: '', coffee: ['', '', '', ''], sum: '', s1: '', s2: '', checked: false } }),
     a3: () => ({ origin: '', maker: '', hq: '', rawList: '', compare: Array.from({ length: 6 }, () => row('material', 'predicted', 'origin', 'price', 'cost')), diff: '' }),
     a4: () => ({ hq: '', rows: { raw: row('place', 'who', 'va', 'route'), make: row('place', 'who', 'va', 'route'), dist: row('place', 'who', 'va', 'route'), sale: row('place', 'who', 'va', 'route'), tax: row('va') }, insight: '' }),
     a5: () => ({ marks: row('hq', 'raw', 'factory', 'sale', 'route'), insight: '', manual: false, manualLegs: Array.from({ length: 5 }, () => row('from', 'to', 'mode', 'km')), manualImage: null }),
@@ -42,7 +42,11 @@ window.WS = (function () {
       const saved = STORE.get('ws:' + k);
       S[k] = Object.assign(DEF[k](), saved || {});
       // 중첩 기본값 보강
-      if (k === 'a2' && saved) S.a2.concept = Object.assign(DEF.a2().concept, saved.concept || {});
+      if (k === 'a2' && saved) {
+        const c = saved.concept || {}; S.a2.concept = Object.assign(DEF.a2().concept, c);
+        // 이전 형식(빵 예시 bread 칸) → 2-3 예시가 커피로 바뀌어 계산 칸·합계·A는 비우고, 개념 빈칸(판 값·산 값)과 B는 유지
+        if (c.bread && !c.coffee) { Object.assign(S.a2.concept, { coffee: ['', '', '', ''], sum: '', s1: '', checked: false }); delete S.a2.concept.bread; save('a2'); }
+      }
       if (k === 'a4' && saved) S.a4.rows = Object.assign(DEF.a4().rows, saved.rows || {});
       if (k === 'a5' && saved) S.a5.marks = Object.assign(DEF.a5().marks, saved.marks || {});
       // 이전 형식(관점별 문제점 표 · 소비 방법 3줄) 기록을 새 칸으로 옮김
@@ -104,7 +108,7 @@ window.WS = (function () {
     main.innerHTML = html; main.appendChild(body);
     ({ start: vStart, ads: vAds, a1: vA1, a2: vA2, a3: vA3, a4: vA4, a5: vA5, a6: vA6, a7: vA7, a8: vA8, eval: vEval, review: vReview })[st.id](body);
     main.querySelector('#progress').addEventListener('click', e => { const b = e.target.closest('button'); if (b) APP.go('#ws/' + b.dataset.step); });
-    body.addEventListener('click', e => { const z = e.target.closest('[data-adzoom]'); if (z) { e.preventDefault(); openAd(Number(z.dataset.adzoom)); } });
+    body.addEventListener('click', e => { const z = e.target.closest('[data-adzoom]'); if (z) { e.preventDefault(); openAd(Number(z.dataset.adzoom)); } const v = e.target.closest('[data-vazoom]'); if (v) { e.preventDefault(); openVA(Number(v.dataset.vazoom)); } });
     const act = main.querySelector('#progress .active'); if (act) act.scrollIntoView({ inline: 'center', block: 'nearest' });
     return st;
   }
@@ -157,6 +161,25 @@ window.WS = (function () {
         <img class="adimg" src="assets/ads/ad${prod.no}.png" alt="${esc(prod.name)} 광고지" loading="eager" decoding="async">
         <p class="small muted" style="margin:6px 0 0">글씨가 작으면 [확대하기]를 누르세요. 새 탭에서 크게 열립니다.</p></div>`
     : `<div class="card warn">광고지 화면에서 제품을 고르면 그 광고지가 여기에 자동으로 나타납니다. <button type="button" class="btn sm sec" data-go="#ws/ads">광고지 보러 가기</button></div>`;
+  // 부가가치 학습자료(data3) 카드 : n = 0 개념, 1~6 제품별. 이미지 assets/va/va{n}.png, 원본 assets/pdf/va{n}.pdf. [확대하기]는 render()의 클릭 위임(data-vazoom)
+  const vaTitle = n => n ? `부가가치 따라가기 ${circ(n)} ${DATA.PRODUCTS[n - 1].name}` : '부가가치란 무엇일까? (개념)';
+  function openVA(n) { RES.openTab(`assets/va/va${n}.png`, vaTitle(n), `assets/pdf/va${n}.pdf`); }
+  const vaBtns = n => `<div class="btnrow fixed" style="margin:0"><button type="button" class="btn sm" data-vazoom="${n}">확대하기</button><a class="btn sm ghost" href="assets/pdf/va${n}.pdf" target="_blank" rel="noopener">PDF 원본</a></div>`;
+  // 활동 2-3 : 개념 자료(부가가치 학습자료_0_개념.pdf) 자동 표시
+  const conceptCard = () => `<div class="card labelcard vacard" id="conceptCard"><div class="row" style="align-items:center"><h3 style="flex:1 1 200px;margin:0">부가가치 개념 자료 <span class="badge auto">자동</span></h3>${vaBtns(0)}</div>
+        <img class="vaimg" src="assets/va/va0.png" alt="부가가치란 무엇일까? 학습자료" loading="eager" decoding="async">
+        <p class="small muted" style="margin:6px 0 0">글씨가 작으면 [확대하기]를 누르세요. 새 탭에서 크게 열립니다.</p></div>`;
+  // 활동 4·6 : 선택한 제품의 「부가가치 따라가기」 자료 자동 표시 (표 + 원본 이미지)
+  const vaCard = prod => prod
+    ? `<div class="card labelcard vacard" id="vaCard"><div class="row" style="align-items:center"><h3 style="flex:1 1 200px;margin:0">내가 고른 제품의 부가가치 자료 : ${prod.no}. ${esc(prod.name)} <span class="badge auto">자동</span></h3>${vaBtns(prod.no)}</div>
+        <p class="small" style="margin:8px 0 4px">소비자 가격 <b>${won(prod.price)}원</b> = 세금 빼기 전 판매 가격 ${won(prod.preTax)}원 + 부가가치세 ${won(prod.tax)}원</p>
+        <div class="tbl-wrap"><table class="tbl vatbl"><thead><tr><th>단계</th><th>누가 · 어디서</th><th>산 값</th><th>판 값</th><th>부가가치</th><th>비율</th></tr></thead><tbody>
+        ${prod.va.stages.map(s => `<tr><td class="lab">${s.key}</td><td>${esc(s.who)}</td><td class="num">${won(s.buy)}원</td><td class="num">${won(s.sell)}원</td><td class="num"><b>${won(s.va)}원</b></td><td class="num">${s.pct}%</td></tr>`).join('')}
+        <tr><td colspan="4" class="right">부가가치세 (정부)</td><td class="num"><b>${won(prod.tax)}원</b></td><td class="num">${pct(prod.tax, prod.price)}%</td></tr>
+        <tr><td colspan="4" class="right"><b>합계 = 소비자 가격</b></td><td class="num"><b>${won(prod.price)}원</b></td><td class="num">100%</td></tr></tbody></table></div>
+        <img class="vaimg" src="assets/va/va${prod.no}.png" alt="${esc(prod.name)} 부가가치 자료" loading="eager" decoding="async">
+        <p class="small muted" style="margin:6px 0 0">자료 아래쪽 「확인해 봅시다」 질문도 생각해 보세요. 글씨가 작으면 [확대하기]를 누르세요.</p></div>`
+    : `<div class="card warn">광고지 화면에서 제품을 고르면 그 제품의 부가가치 자료가 여기에 자동으로 나타납니다. <button type="button" class="btn sm sec" data-go="#ws/ads">광고지 보러 가기</button></div>`;
   function vAds(root) {
     const cur = STORE.get('product');
     root.innerHTML = `
@@ -215,15 +238,16 @@ window.WS = (function () {
         <div><label class="f">예상 비율 <span class="badge auto">자동</span></label>${auto('a2ratio', '0.0', '%')}</div>
       </div>
       <label class="f">그렇게 예상한 이유</label>${ta('ratioReason', 200, '', 3)}
-      <div class="q"><span class="num">2-3.</span>부가가치 개념 알아보기 <span class="small muted">(부가가치 개념 자료 참고)</span></div>
+      <div class="q"><span class="num">2-3.</span>부가가치 개념 알아보기 <span class="small muted">(아래 개념 자료를 읽고 풀어 보세요)</span></div>
+      ${conceptCard()}
       <div class="card" style="margin-bottom:10px">
         <div class="row" style="justify-content:center;font-size:1.05rem"><span class="fixed"><b>부가가치 = (</b></span><span style="flex:1 1 120px;max-width:200px">${txt('concept.blank1', 20, '?')}</span><span class="fixed"><b>) − (</b></span><span style="flex:1 1 120px;max-width:200px">${txt('concept.blank2', 20, '?')}</span><span class="fixed"><b>)</b></span></div>
-        <p class="small">빵 한 개(1,100원)가 만들어지기까지의 예시에서 단계별 부가가치를 계산해 봅시다.</p>
+        <p class="small">자료의 빵 예시처럼, <b>커피 한 잔(4,400원)</b>이 만들어지기까지의 단계별 부가가치를 계산해 봅시다.</p>
         <div class="tbl-wrap"><table class="tbl"><thead><tr><th>단계</th><th>누가 무엇을</th><th>산 값</th><th>판 값</th><th>부가가치</th></tr></thead><tbody>
-          ${DATA.BREAD.rows.map((r, i) => `<tr><td class="lab">${r[0]}</td><td>${esc(r[1])}</td><td class="num">${won(r[2])}원</td><td class="num">${won(r[3])}원</td><td><div class="row" style="flex-wrap:nowrap"><input type="number" inputmode="numeric" data-b="concept.bread.${i}" style="min-width:70px"><span class="fixed">원 <span class="mark" data-m="bread.${i}"></span></span></div></td></tr>`).join('')}
+          ${DATA.COFFEE.rows.map((r, i) => `<tr><td class="lab">${r[0]}</td><td>${esc(r[1])}</td><td class="num">${won(r[2])}원</td><td class="num">${won(r[3])}원</td><td><div class="row" style="flex-wrap:nowrap"><input type="number" inputmode="numeric" data-b="concept.coffee.${i}" style="min-width:70px"><span class="fixed">원 <span class="mark" data-m="coffee.${i}"></span></span></div></td></tr>`).join('')}
           <tr><td colspan="4" class="right"><b>네 단계 부가가치의 합</b></td><td><div class="row" style="flex-wrap:nowrap"><input type="number" inputmode="numeric" data-b="concept.sum" style="min-width:70px"><span class="fixed">원 <span class="mark" data-m="sum"></span></span></div></td></tr>
         </tbody></table></div>
-        <p style="margin-top:10px">→ 네 단계 부가가치의 합은 ( <b>A</b> )과 같다.<br>소비자 가격 1,100원 중 100원은 ( <b>B</b> )이다.</p>
+        <p style="margin-top:10px">→ 네 단계 부가가치의 합은 ( <b>A</b> )과 같다.<br>소비자 가격 4,400원 중 400원은 ( <b>B</b> )이다.</p>
         <div class="grid2">
           <div><label class="f">A에 들어갈 가격은? <span class="mark" data-m="s1"></span></label><div class="row" style="flex-wrap:nowrap">${txt('concept.s1', 30, '')}<span class="fixed">원</span></div></div>
           <div><label class="f">B에 들어갈 용어는? <span class="mark" data-m="s2"></span></label>${txt('concept.s2', 20, '')}</div>
@@ -239,7 +263,7 @@ window.WS = (function () {
     root.querySelector('#addPred').addEventListener('click', () => { if (st.predict.length < 8) { st.predict.push(row('material', 'reason', 'country', 'price')); save('a2'); vA2(root); } });
     root.querySelector('#chk23').addEventListener('click', () => { const r = CHECK.concept(st.concept); st.concept.checked = true; save('a2');
       root.querySelectorAll('[data-m]').forEach(m => { const ok = r[m.dataset.m]; m.textContent = ok === true ? '○' : ok === false ? '다시 생각해 보기' : ''; m.className = 'mark ' + (ok ? 'ok' : 'no'); });
-      root.querySelector('#msg23').innerHTML = r.all ? '<div class="check-msg ok">모두 맞았어요! 부가가치 = 판 값 − 산 값, 네 단계의 합(1,000원)은 세금 빼기 전 판매 가격과 같고, 100원은 부가가치세입니다.</div>' : '<div class="check-msg warn">표시된 칸을 다시 생각해 보세요. (부가가치 개념 자료 참고)</div>'; });
+      root.querySelector('#msg23').innerHTML = r.all ? '<div class="check-msg ok">모두 맞았어요! 부가가치 = 판 값 − 산 값, 네 단계의 합(4,000원)은 세금 빼기 전 판매 가격과 같고, 400원은 부가가치세입니다.</div>' : '<div class="check-msg warn">표시된 칸을 다시 생각해 보세요. (부가가치 개념 자료 참고)</div>'; });
     if (st.concept.checked) root.querySelector('#chk23').click();
   }
 
@@ -295,7 +319,8 @@ window.WS = (function () {
       <div class="card soft" style="margin-bottom:14px"><div class="row" style="align-items:center"><p style="flex:1 1 220px;margin:0">상품 사슬표를 쓰면서 <b>지도 탭</b>에서 상품 사슬 지도를 함께 만듭니다. 지도를 만든 뒤 활동 5로 이어집니다.</p><div class="btnrow fixed" style="margin:0"><button class="btn" data-res="map">지도 만들러 가기</button></div></div></div>
       <div class="q"><span class="num">4-1.</span>브랜드 본사 위치 <span class="small muted">(나라 / 도시)</span></div>${txt('hq', 60, '예 : 프랑스 / 파리')}
       <div class="q"><span class="num">4-2.</span>단계별로 장소, 하는 일, 부가가치, 이동 경로를 정리해 봅시다.</div>
-      <div class="hint">장소 : 원료는 주요 원료 생산지, 제조는 제조국·공장 위치, 유통·판매는 회사·매장 위치를 적으세요. 부가가치는 자료의 「부가가치 따라가기」 표를 참고합니다.</div>
+      ${vaCard(prod)}
+      <div class="hint">장소 : 원료는 주요 원료 생산지, 제조는 제조국·공장 위치, 유통·판매는 회사·매장 위치를 적으세요. 부가가치(원)는 위 「내가 고른 제품의 부가가치 자료」 표의 값을 옮겨 적습니다.</div>
       <div class="btnrow">${resBtn('va', '부가가치 자료 보기')}<button class="btn sec sm" id="fromMap">지도에서 장소 불러오기</button></div>
       <div class="tbl-wrap"><table class="tbl resp"><thead><tr><th>단계</th><th>장소<br>(나라 / 지역)</th><th>누가 · 하는 일</th><th>부가가치<br>(원)</th><th>비율<br>(%)</th><th>이동 경로<br>(다음 단계로 가는 곳 · 운송 수단)</th></tr></thead><tbody>
         ${R.map(([k, n]) => `<tr><td class="lab">${n}</td><td data-l="장소 (나라 / 지역)">${ta(`rows.${k}.place`, 80, '', 2)}</td><td data-l="누가 · 하는 일">${ta(`rows.${k}.who`, 100, '', 2)}</td><td data-l="부가가치(원)">${numIn(`rows.${k}.va`, '원')}</td><td data-l="비율(%) · 자동">${auto('pct_' + k, '0.0', '%')}</td><td data-l="이동 경로">${k === 'sale' ? '<div class="small muted">소비자 :</div>' : ''}${ta(`rows.${k}.route`, 100, k === 'sale' ? '예 : 서울의 학생 (매장에서 구입)' : '예 : 프랑스 리옹 공장으로 · 선박', 2)}</td></tr>`).join('')}
@@ -368,6 +393,7 @@ window.WS = (function () {
       <details class="collapse"><summary>활동 4의 상품 사슬표 (참고)</summary><div class="tbl-wrap"><table class="tbl"><thead><tr><th>단계</th><th>장소</th><th>부가가치</th><th>비율</th></tr></thead><tbody>
         ${[['raw', '원료'], ['make', '제조'], ['dist', '유통'], ['sale', '판매'], ['tax', '부가가치세']].map(([k, n]) => `<tr><td class="lab">${n}</td><td>${esc(k === 'tax' ? '정부' : a4.rows[k].place)}</td><td class="num">${won(num(a4.rows[k].va))}원</td><td class="num">${pct(num(a4.rows[k].va), price)}%</td></tr>`).join('')}
       </tbody></table></div></details>
+      <details class="collapse"><summary>내가 고른 제품의 부가가치 자료 (참고)</summary>${vaCard(prod)}</details>
       <div class="q"><span class="num">6-1.</span>부가가치가 가장 높게 만들어지는 단계와 장소를 찾아봅시다.</div>
       <div class="grid2">
         <div><label class="f">단계</label>${sel('topStage', STAGES)}</div>
@@ -437,7 +463,7 @@ window.WS = (function () {
     chk('a1', '1-3 말하지 않는 것', S.a1.adHidden, '[data-b="adHidden"]');
     chk('a2', '2-1 원료 예상 (3줄 이상)', S.a2.predict.filter(r => r.material).length >= 3, '#predTbl');
     chk('a2', '2-2 예상한 이유', S.a2.ratioReason, '[data-b="ratioReason"]');
-    chk('a2', '2-3 부가가치 개념 (빈칸 모두)', S.a2.concept.blank1 && S.a2.concept.blank2 && S.a2.concept.bread.every(v => v !== '') && S.a2.concept.sum !== '' && S.a2.concept.s1 && S.a2.concept.s2, '[data-b="concept.blank1"]');
+    chk('a2', '2-3 부가가치 개념 (빈칸 모두)', S.a2.concept.blank1 && S.a2.concept.blank2 && S.a2.concept.coffee.every(v => v !== '') && S.a2.concept.sum !== '' && S.a2.concept.s1 && S.a2.concept.s2, '[data-b="concept.blank1"]');
     chk('a3', '3-1 라벨 정보 4칸', S.a3.origin && S.a3.maker && S.a3.hq && S.a3.rawList, '[data-b="origin"]');
     chk('a3', '3-2 실제 원료 (3줄 이상)', S.a3.compare.filter(r => r.material).length >= 3, '[data-b="compare.0.material"]');
     chk('a3', '3-3 차이점', S.a3.diff, '[data-b="diff"]');
@@ -493,11 +519,11 @@ window.CHECK = (function () {
     const r = {};
     r.blank1 = sellWord(c.blank1);
     r.blank2 = buyWord(c.blank2);
-    DATA.BREAD.answers.forEach((a, i) => { r['bread.' + i] = Number(c.bread[i]) === a; });
-    r.sum = Number(c.sum) === DATA.BREAD.sum;
-    // A : 세금 빼기 전 판매 가격 1,000원 — 숫자(1000)나 ‘판매 가격’이라는 말 둘 다 인정
+    DATA.COFFEE.answers.forEach((a, i) => { r['coffee.' + i] = Number(c.coffee[i]) === a; });
+    r.sum = Number(c.sum) === DATA.COFFEE.sum;
+    // A : 세금 빼기 전 판매 가격 4,000원 — 숫자(4000)나 ‘판매 가격’이라는 말 둘 다 인정
     const s1 = norm(c.s1); const s1n = Number(String(c.s1 ?? '').replace(/[^\d.]/g, ''));
-    r.s1 = s1n === 1000 || (s1.length > 0 && /판매|판값|팔/.test(s1) && /가격|금액|값|액/.test(s1));
+    r.s1 = s1n === DATA.COFFEE.sum || (s1.length > 0 && /판매|판값|팔/.test(s1) && /가격|금액|값|액/.test(s1));
     const s2 = norm(c.s2);
     r.s2 = s2.length > 0 && /세/.test(s2);
     r.all = Object.values(r).every(v => v === true);

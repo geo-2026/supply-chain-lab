@@ -57,11 +57,11 @@ window.PDF = (function () {
     const c = S.a2.concept;
     add(`<div class="q">2-3. 부가가치 개념 알아보기 (부가가치 개념 자료 참고)</div>
       <div class="box short" style="text-align:center">부가가치 = ( &nbsp;${esc(c.blank1)}&nbsp; ) − ( &nbsp;${esc(c.blank2)}&nbsp; )</div>
-      <p class="hint" style="margin-top:6px">빵 한 개(1,100원)가 만들어지기까지의 예시에서 단계별 부가가치를 계산해 봅시다.</p>
+      <p class="hint" style="margin-top:6px">자료의 빵 예시처럼, 커피 한 잔(4,400원)이 만들어지기까지의 단계별 부가가치를 계산해 봅시다.</p>
       <table><thead><tr><th style="width:50px">단계</th><th>누가 무엇을</th><th style="width:70px">산 값</th><th style="width:70px">판 값</th><th style="width:90px">부가가치</th></tr></thead><tbody>
-      ${DATA.BREAD.rows.map((r, i) => `<tr><td class="lab">${r[0]}</td><td>${esc(r[1])}</td><td class="num">${won(r[2])}원</td><td class="num">${won(r[3])}원</td><td class="num">( ${esc(c.bread[i])} )원</td></tr>`).join('')}
+      ${DATA.COFFEE.rows.map((r, i) => `<tr><td class="lab">${r[0]}</td><td>${esc(r[1])}</td><td class="num">${won(r[2])}원</td><td class="num">${won(r[3])}원</td><td class="num">( ${esc(c.coffee[i])} )원</td></tr>`).join('')}
       <tr><td colspan="4" class="lab">네 단계 부가가치의 합</td><td class="num">( ${esc(c.sum)} )원</td></tr></tbody></table>
-      <p style="margin:6px 0 0">→ 네 단계 부가가치의 합은 ( <b>A</b> )과 같다.<br>&nbsp;&nbsp;&nbsp;소비자 가격 1,100원 중 100원은 ( <b>B</b> )이다.</p>
+      <p style="margin:6px 0 0">→ 네 단계 부가가치의 합은 ( <b>A</b> )과 같다.<br>&nbsp;&nbsp;&nbsp;소비자 가격 4,400원 중 400원은 ( <b>B</b> )이다.</p>
       <table style="margin-top:6px"><tbody><tr><td class="lab" style="width:160px">A에 들어갈 가격은?</td><td>( ${esc(c.s1)} )원</td><td class="lab" style="width:160px">B에 들어갈 용어는?</td><td>( ${esc(c.s2)} )</td></tr></tbody></table>`);
     // 3
     add(`<h2>3. [개별활동Ⅲ] 제품 라벨 확인하기</h2><div class="q">3-1. 제품 라벨에서 다음 정보를 찾아 적어봅시다.</div><table><tbody>

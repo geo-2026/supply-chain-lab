@@ -400,13 +400,17 @@ window.DATA = (function () {
   };
 
   const BREAD = { rows: [['원료', '농부가 밀을 길러 판다', 0, 100], ['제조', '제분소·제빵 공장이 빵을 만든다', 100, 500], ['유통', '도매상이 가게까지 실어 나른다', 500, 700], ['판매', '빵집이 손님에게 판다 (세금 제외)', 700, 1000]], answers: [100, 400, 200, 300], sum: 1000 };
+  // 활동 2-3 연습용 예시 (학습자료의 빵 예시와 다른 상품으로 개념을 적용해 보게 함) — 커피 한 잔 4,400원 = 세금 빼기 전 4,000원 + 부가가치세 400원
+  const COFFEE = { name: '커피 한 잔', price: 4400, preTax: 4000, tax: 400,
+    rows: [['원료', '커피 농부가 커피 열매를 길러 생두를 판다', 0, 200], ['제조', '로스팅 공장이 생두를 볶아 원두로 만든다', 200, 1000], ['유통', '수입·도매상이 원두를 카페까지 실어 나른다', 1000, 1500], ['판매', '카페가 커피를 내려 손님에게 판다 (세금 제외)', 1500, 4000]],
+    answers: [200, 800, 500, 2500], sum: 4000 };
 
   const gazById = {};
   GAZ.forEach(g => { gazById[g.id] = g; });
   const productById = {};
   PRODUCTS.forEach(p => { productById[p.id] = p; });
 
-  return { GAZ, gazById, SEA_NODES, SEA_EDGES, PRODUCTS, productById, ROLES, BREAD,
+  return { GAZ, gazById, SEA_NODES, SEA_EDGES, PRODUCTS, productById, ROLES, BREAD, COFFEE,
     ROAD_FACTOR: 1.3, // 도로는 직선거리의 약 1.3배 (평균적인 우회율)
-    VERSION: '1.2.2' };
+    VERSION: '1.3.0' };
 })();

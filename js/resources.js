@@ -36,8 +36,8 @@ window.RES = (function () {
         ${DATA.BREAD.rows.map((r, i) => `<tr><td class="lab">${r[0]}</td><td>${esc(r[1])}</td><td class="num">${won(r[2])}</td><td class="num">${won(r[3])}</td><td class="num"><b>${won(DATA.BREAD.answers[i])}</b></td></tr>`).join('')}
         <tr><td colspan="4" class="right"><b>네 단계 부가가치의 합</b></td><td class="num"><b>1,000원</b></td></tr></tbody></table></div>
         <p class="small muted">1,000원 × 1.1 = 소비자 가격 1,100원 (부가가치세 100원)</p>
-        <h3 style="margin-top:16px">학습자료 원본 (7쪽)</h3>
-        <div class="gallery">${[1, 2, 3, 4, 5, 6, 7].map(i => `<figure data-img="assets/va/va${i}.png" data-pdf="assets/pdf/value-added.pdf" data-ttl="부가가치 학습자료 ${i}쪽"><img src="assets/va/va${i}.png" alt="부가가치 학습자료 ${i}쪽" loading="lazy"><figcaption>${i === 1 ? '개념' : '② 제품 ' + (i - 1) + ' · ' + DATA.PRODUCTS[i - 2].name}</figcaption></figure>`).join('')}</div></div>
+        <h3 style="margin-top:16px">학습자료 원본 (개념 1장 + 제품별 6장) <a class="small" href="assets/pdf/value-added.pdf" target="_blank" rel="noopener">전체 PDF (7쪽)</a></h3>
+        <div class="gallery">${[0, 1, 2, 3, 4, 5, 6].map(i => `<figure data-img="assets/va/va${i}.png" data-pdf="assets/pdf/va${i}.pdf" data-ttl="${i ? '부가가치 따라가기 ' + i + ' · ' + esc(DATA.PRODUCTS[i - 1].name) : '부가가치란 무엇일까? (개념)'}"><img src="assets/va/va${i}.png" alt="부가가치 학습자료 ${i ? '제품 ' + i : '개념'}" loading="lazy"><figcaption>${i ? i + '. ' + esc(DATA.PRODUCTS[i - 1].name) : '개념'}</figcaption></figure>`).join('')}</div></div>
         <div class="card"><h2>부가가치 따라가기 — 제품별 표</h2>
         <div class="subtabs" id="vaProd">${DATA.PRODUCTS.map(p => `<button data-p="${p.id}" class="${prod && prod.id === p.id ? 'active' : ''}">${p.no} ${esc(p.name)}</button>`).join('')}</div>
         <div id="vaBody"></div></div>`;
@@ -60,6 +60,7 @@ window.RES = (function () {
     const colors = ['#9fc5e8', '#5b9bd5', '#2f6fc4', '#1f3f7a', '#9aa5b1'];
     const segs = [...p.va.stages.map((s, i) => ({ n: s.key + (i ? ' (' + s.place.split('·')[0].trim() + ')' : ''), v: s.va, pct: s.pct })), { n: '세금', v: p.tax, pct: Math.round(p.tax / p.price * 1000) / 10 }];
     el.innerHTML = `<p><b>${esc(p.full)}</b> — 소비자 가격 <b>${won(p.price)}</b> = 세금 빼기 전 판매 가격 ${won(p.preTax)} + 부가가치세 ${won(p.tax)}</p>
+      <div class="btnrow"><button type="button" class="btn sm sec" id="vaSheet">학습자료 크게 보기 (새 탭)</button><a class="btn sm ghost" href="assets/pdf/va${p.no}.pdf" target="_blank" rel="noopener">PDF 원본</a></div>
       <div class="tbl-wrap"><table class="tbl"><thead><tr><th>단계</th><th>누가 · 어디서</th><th>하는 일</th><th>산 값</th><th>판 값</th><th>부가가치</th><th>비율</th></tr></thead><tbody>
       ${p.va.stages.map(s => `<tr><td class="lab">${s.key}</td><td>${esc(s.who)}</td><td>${esc(s.work)}</td><td class="num">${won(s.buy)}</td><td class="num">${won(s.sell)}</td><td class="num"><b>${won(s.va)}</b></td><td class="num">${s.pct}%</td></tr>`).join('')}
       <tr><td colspan="5" class="right">부가가치세 (정부)</td><td class="num">${won(p.tax)}</td><td class="num">9.1%</td></tr>
@@ -70,6 +71,7 @@ window.RES = (function () {
       <div class="va-bar">${segs.map((s, i) => `<span style="width:${s.pct}%;background:${colors[i]}" title="${esc(s.n)} ${won(s.v)}"></span>`).join('')}</div>
       <div class="legend">${segs.map((s, i) => `<span><i style="background:${colors[i]}"></i>${esc(s.n)} ${won(s.v)} · ${s.pct}%</span>`).join('')}</div>
       <p class="small muted">※ 수업용 가상 자료입니다. 원료 값은 2026-08-01 기준 원료 가격으로 계산했고, 제조·유통·판매 금액은 가상입니다.</p>`;
+    el.querySelector('#vaSheet').addEventListener('click', () => openTab(`assets/va/va${p.no}.png`, `부가가치 따라가기 ${p.no} · ${p.name}`, `assets/pdf/va${p.no}.pdf`));
   }
 
   function drawPrices(p) {

@@ -1,5 +1,5 @@
 /* 서비스 워커 — 앱 전체를 캐시해 인터넷 없이도 동작 */
-const VERSION = 'scl-v1.2.2';
+const VERSION = 'scl-v1.3.0';
 const FILES = [
   './', './index.html', './view.html', './manifest.webmanifest', './css/app.css',
   './js/data.js', './js/geo.js', './js/store.js', './js/map.js', './js/resources.js', './js/worksheet.js', './js/pdf.js', './js/main.js',
@@ -7,7 +7,7 @@ const FILES = [
   './fonts/NotoSansKR-400.woff2', './fonts/NotoSansKR-700.woff2',
   './assets/world.json', './assets/icon-192.png', './assets/icon-512.png',
   ...[1, 2, 3, 4, 5, 6].flatMap(i => [`./assets/ads/ad${i}.png`, `./assets/ads/ad${i}_thumb.png`, `./assets/labels/label${i}.png`, `./assets/labels/label${i}_thumb.png`, `./assets/pdf/ad${i}.pdf`, `./assets/pdf/label${i}.pdf`]),
-  ...[1, 2, 3, 4, 5, 6, 7].map(i => `./assets/va/va${i}.png`),
+  ...[0, 1, 2, 3, 4, 5, 6].flatMap(i => [`./assets/va/va${i}.png`, `./assets/pdf/va${i}.pdf`]),
   './assets/pdf/value-added.pdf', './assets/pdf/raw-material-prices.xlsx', './assets/pdf/worksheet-original.pdf'
 ];
 

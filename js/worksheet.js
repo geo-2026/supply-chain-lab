@@ -104,6 +104,7 @@ window.WS = (function () {
     main.innerHTML = html; main.appendChild(body);
     ({ start: vStart, ads: vAds, a1: vA1, a2: vA2, a3: vA3, a4: vA4, a5: vA5, a6: vA6, a7: vA7, a8: vA8, eval: vEval, review: vReview })[st.id](body);
     main.querySelector('#progress').addEventListener('click', e => { const b = e.target.closest('button'); if (b) APP.go('#ws/' + b.dataset.step); });
+    body.addEventListener('click', e => { const z = e.target.closest('[data-adzoom]'); if (z) { e.preventDefault(); openAd(Number(z.dataset.adzoom)); } });
     const act = main.querySelector('#progress .active'); if (act) act.scrollIntoView({ inline: 'center', block: 'nearest' });
     return st;
   }
@@ -150,6 +151,12 @@ window.WS = (function () {
   // ── 광고지 · 제품 고르기 ──
   const circ = n => ['①', '②', '③', '④', '⑤', '⑥'][n - 1] || n;
   function openAd(n) { RES.openTab(`assets/ads/ad${n}.png`, `광고지 ${n} · ${DATA.PRODUCTS[n - 1].name}`, `assets/pdf/ad${n}.pdf`); }
+  // 선택한 제품의 광고지 카드 (활동 1·2 공용). [확대하기]는 render()의 클릭 위임(data-adzoom)으로 새 탭에 열림
+  const adCard = prod => prod
+    ? `<div class="card labelcard adcard"><div class="row" style="align-items:center"><h3 style="flex:1 1 200px;margin:0">내가 고른 제품의 광고지 : ${prod.no}. ${esc(prod.name)} <span class="badge auto">자동</span></h3><div class="btnrow fixed" style="margin:0"><button type="button" class="btn sm" data-adzoom="${prod.no}">확대하기</button><a class="btn sm ghost" href="assets/pdf/ad${prod.no}.pdf" target="_blank" rel="noopener">PDF 원본</a><button type="button" class="btn sm ghost" data-go="#ws/ads">다른 제품 고르기</button></div></div>
+        <img class="adimg" src="assets/ads/ad${prod.no}.png" alt="${esc(prod.name)} 광고지" loading="eager" decoding="async">
+        <p class="small muted" style="margin:6px 0 0">글씨가 작으면 [확대하기]를 누르세요. 새 탭에서 크게 열립니다.</p></div>`
+    : `<div class="card warn">광고지 화면에서 제품을 고르면 그 광고지가 여기에 자동으로 나타납니다. <button type="button" class="btn sm sec" data-go="#ws/ads">광고지 보러 가기</button></div>`;
   function vAds(root) {
     const cur = STORE.get('product');
     root.innerHTML = `
@@ -176,10 +183,7 @@ window.WS = (function () {
   function vA1(root) {
     const prod = product();
     root.innerHTML = `
-      ${prod ? `<div class="card labelcard" id="adCard"><div class="row" style="align-items:center"><h3 style="flex:1 1 200px;margin:0">내가 고른 제품의 광고지 : ${prod.no}. ${esc(prod.name)} <span class="badge auto">자동</span></h3><div class="btnrow fixed" style="margin:0"><button class="btn sm" id="adZoom">확대하기</button><a class="btn sm ghost" href="assets/pdf/ad${prod.no}.pdf" target="_blank" rel="noopener">PDF 원본</a><button class="btn sm ghost" data-go="#ws/ads">다른 제품 고르기</button></div></div>
-        <img class="adimg" src="assets/ads/ad${prod.no}.png" alt="${esc(prod.name)} 광고지">
-        <p class="small muted" style="margin:6px 0 0">글씨가 작으면 [확대하기]를 누르세요. 새 탭에서 크게 열립니다.</p></div>`
-        : `<div class="card warn">광고지 화면에서 제품을 고르면 그 광고지가 여기에 자동으로 나타납니다. <button class="btn sm sec" data-go="#ws/ads">광고지 보러 가기</button></div>`}
+      ${adCard(prod)}
       <div class="q"><span class="num">1-1.</span>가상 상품 광고지 6종을 살펴보고, 내가 탐구할 제품 하나에 ✓ 표시해 봅시다.</div>
       <div class="card soft" id="pickBox"><p style="margin:0">${prod ? `<span class="badge ok">✓ 선택</span> <b>${circ(prod.no)} ${esc(prod.name)}</b> <span class="muted">(${esc(prod.full)} · ${esc(prod.slogan)} · ${esc(prod.priceLabel)})</span>` : '<span class="muted">아직 고르지 않았습니다. 위의 [광고지 보러 가기]를 누르세요.</span>'}</p></div>
       <div class="q"><span class="num">1-2.</span>이 제품을 고른 이유를 적어봅시다.</div>${ta('reason', 300, '')}
@@ -189,7 +193,6 @@ window.WS = (function () {
         <tr><td class="lab">광고가 강조하는 장점</td><td class="nolab">${ta('adPros', 150, '', 2)}</td></tr>
         <tr><td class="lab">광고가 말하지 않는 것<br>(예상)</td><td class="nolab">${ta('adHidden', 200, '예 : 원료가 어디서 왔는지, 누가 만들었는지, 가격 중 원료 값은 얼마인지…', 3)}</td></tr>
       </tbody></table></div>`;
-    const z = root.querySelector('#adZoom'); if (z) z.addEventListener('click', () => openAd(prod.no));
     bind(root, 'a1');
   }
 
@@ -199,6 +202,7 @@ window.WS = (function () {
     const price = prod ? prod.price : 0;
     const rowsHtml = () => st.predict.map((r, i) => `<tr><td data-l="원료 (예상)">${txt(`predict.${i}.material`, 30, '')}</td><td data-l="그렇게 생각한 이유">${txt(`predict.${i}.reason`, 60, '')}</td><td data-l="생산될 것 같은 나라">${txt(`predict.${i}.country`, 30, '')}</td><td data-l="예상 가격(원)">${numIn(`predict.${i}.price`, '원')}</td></tr>`).join('');
     root.innerHTML = `
+      ${adCard(prod)}
       <div class="q"><span class="num">2-1.</span>라벨을 보기 전에, 제품을 만드는 데 필요한 원료와 그 가격을 예상해 봅시다.</div>
       <div class="hint">예상 가격 = 제품 1개를 만드는 데 드는 원료 값. 정답이 아니어도 괜찮으니 근거를 들어 예상하세요.</div>
       <div class="tbl-wrap"><table class="tbl resp" id="predTbl"><thead><tr><th>원료 (예상)</th><th>그렇게 생각한 이유</th><th>생산될 것 같은 나라</th><th>예상 가격(원)</th></tr></thead><tbody>${rowsHtml()}</tbody>

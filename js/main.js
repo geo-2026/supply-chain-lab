@@ -46,7 +46,18 @@ window.APP = (function () {
         <div class="card"><h3>③ 활동지</h3><p class="small">활동 1~8과 평가지를 작성하고, 제출 전 점검 뒤 PDF로 저장합니다.</p><button class="btn ghost sm" data-go="#ws/start">열기</button></div>
       </div>
       <div class="card"><h3>이 앱의 저장 방식</h3><p class="small">입력한 내용은 <b>이 기기(브라우저)에만</b> 저장되며 외부 서버로 보내지 않습니다. 브라우저 기록·사이트 데이터를 지우면 함께 지워지니, 활동이 끝나면 꼭 <b>PDF 저장</b>과 <b>백업 파일 내보내기</b>를 해 두세요. 인터넷이 없어도(비행기 모드) 모든 기능을 쓸 수 있습니다.</p>
-      <p class="small muted">※ 모든 제품·브랜드·금액은 수업용 가상 자료입니다. 실제 기업·제품과 관계없습니다. 앱 버전 ${DATA.VERSION}</p></div>`;
+      <p class="small muted">※ 모든 제품·브랜드·금액은 수업용 가상 자료입니다. 실제 기업·제품과 관계없습니다. 앱 버전 ${DATA.VERSION} <button class="btn ghost sm" id="btnRefreshApp" type="button">최신 버전으로 새로 고침</button></p></div>`;
+    main.querySelector('#btnRefreshApp').addEventListener('click', refreshApp);
+  }
+
+  // 화면이 옛 버전으로 남아 있을 때(브라우저 캐시) : 서비스 워커·캐시만 지우고 다시 불러옴. 학생 기록(IndexedDB)은 그대로 둠
+  async function refreshApp() {
+    STORE.toast('최신 버전을 받아 옵니다…');
+    try {
+      if ('serviceWorker' in navigator) { const regs = await navigator.serviceWorker.getRegistrations(); await Promise.all(regs.map(r => r.unregister())); }
+      if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
+    } catch (e) { console.warn('캐시 정리 실패', e); }
+    const u = new URL(location.href); u.searchParams.set('v', Date.now()); u.hash = ''; location.replace(u.href);
   }
 
   // ── 공용 대화상자 ──
@@ -106,11 +117,20 @@ window.APP = (function () {
     document.body.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b && b.dataset.go && b.dataset.go.startsWith('#')) go(b.dataset.go); });
     window.addEventListener('hashchange', route);
     route();
-    if ('serviceWorker' in navigator) { try { await navigator.serviceWorker.register('sw.js'); } catch (e) { console.warn('SW 등록 실패', e); } }
+    if ('serviceWorker' in navigator) {
+      // 새 버전의 서비스 워커가 제어권을 가져오면(기존 캐시 → 새 캐시) 한 번 새로 고침해 최신 화면을 보여 줌
+      const hadController = !!navigator.serviceWorker.controller; let reloading = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!hadController || reloading) return; reloading = true;
+        STORE.toast('앱이 새 버전으로 바뀌어 화면을 새로 고칩니다.');
+        setTimeout(() => location.reload(), 800);
+      });
+      try { const reg = await navigator.serviceWorker.register('sw.js'); reg.update().catch(() => {}); } catch (e) { console.warn('SW 등록 실패', e); }
+    }
     MAP.loadWorld().then(() => { if (!STORE.get('map:image') && MAP.getPlaces().length) MAP.exportImage(); });
   }
 
-  return { init, go, route, confirm, exportBackup, importBackup, clearAll, resizeImage, reloadMapData };
+  return { init, go, route, confirm, exportBackup, importBackup, clearAll, resizeImage, reloadMapData, refreshApp };
 })();
 
 document.addEventListener('DOMContentLoaded', APP.init);
